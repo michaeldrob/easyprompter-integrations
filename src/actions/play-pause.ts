@@ -28,7 +28,9 @@ export class PlayPause extends SingletonAction<EasyPrompterSettings> {
 
     const unsubscribe = conn.onStateChange((state: PrompterState) => {
       // State 0 = stopped (show play icon), State 1 = playing (show pause icon)
-      ev.action.setState(state.isPlaying ? 1 : 0);
+      if (ev.action.isKey()) {
+        ev.action.setState(state.isPlaying ? 1 : 0);
+      }
     });
 
     this.unsubscribers.set(ev.action.id, unsubscribe);

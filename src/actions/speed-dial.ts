@@ -30,12 +30,14 @@ export class SpeedDial extends SingletonAction<EasyPrompterSettings> {
 
     const unsubscribe = conn.onStateChange((state: PrompterState) => {
       // Update the encoder feedback with the current speed
-      ev.action.setFeedback({
-        value: `${Math.round(state.speed)}%`,
-        indicator: {
-          value: Math.round(state.speed),
-        },
-      });
+      if (ev.action.isDial()) {
+        ev.action.setFeedback({
+          value: `${Math.round(state.speed)}%`,
+          indicator: {
+            value: Math.round(state.speed),
+          },
+        });
+      }
     });
 
     this.unsubscribers.set(ev.action.id, unsubscribe);

@@ -114,7 +114,7 @@ class WebSocketConnection {
         this.setConnected(true);
       };
 
-      this.ws.onmessage = (event) => {
+      this.ws.onmessage = (event: MessageEvent) => {
         try {
           const message = JSON.parse(String(event.data));
           this.handleMessage(message);
@@ -123,7 +123,7 @@ class WebSocketConnection {
         }
       };
 
-      this.ws.onclose = (event) => {
+      this.ws.onclose = (event: CloseEvent) => {
         logger.warn(
           `Disconnected from EasyPrompter (code: ${event.code}, reason: ${event.reason})`
         );
@@ -132,8 +132,8 @@ class WebSocketConnection {
         this.scheduleReconnect();
       };
 
-      this.ws.onerror = (event) => {
-        logger.error(`WebSocket error: ${event}`);
+      this.ws.onerror = (_event: Event) => {
+        logger.error(`WebSocket error occurred`);
       };
     } catch (err) {
       logger.error(`Failed to create WebSocket: ${err}`);

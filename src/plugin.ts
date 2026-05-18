@@ -1,4 +1,4 @@
-import streamDeck, { LogLevel } from "@elgato/streamdeck";
+import streamDeck from "@elgato/streamdeck";
 
 import { PlayPause } from "./actions/play-pause";
 import { SpeedUp } from "./actions/speed-up";
@@ -9,7 +9,7 @@ import { ResetToStart } from "./actions/reset";
 import { SpeedDial } from "./actions/speed-dial";
 
 // Set the log level for development
-streamDeck.logger.setLevel(LogLevel.DEBUG);
+streamDeck.logger.setLevel("debug");
 
 // Register all actions
 streamDeck.actions.registerAction(new PlayPause());

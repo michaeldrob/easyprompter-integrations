@@ -1,4 +1,5 @@
 import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
 import json from "@rollup/plugin-json";
 import path from "node:path";
@@ -29,7 +30,13 @@ const config = {
     resolve({
       browser: false,
       exportConditions: ["node"],
+      preferBuiltins: true,
     }),
+    commonjs(),
+  ],
+  external: [
+    // Node.js built-ins should not be bundled — the plugin runs in a Node.js runtime
+    /^node:/,
   ],
 };
 
