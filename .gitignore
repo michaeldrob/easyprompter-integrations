@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build output
+com.easyprompter.streamdeck.sdPlugin/bin/
+*.js.map
+
+# Logs
+com.easyprompter.streamdeck.sdPlugin/logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+!.vscode/launch.json
+.idea/
+
+# Environment
+.env
+.env.*

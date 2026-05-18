@@ -1,0 +1,131 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "UUID": "com.easyprompter.streamdeck",
+  "Name": "EasyPrompter",
+  "Version": "0.1.0",
+  "Author": "EasyPrompter",
+  "Description": "Control your EasyPrompter teleprompter from your Stream Deck. Play, pause, adjust speed, and navigate markers with hardware buttons.",
+  "URL": "https://easyprompter.com",
+  "Category": "EasyPrompter",
+  "CategoryIcon": "imgs/category-icon",
+  "Icon": "imgs/plugin-icon",
+  "CodePath": "bin/plugin.js",
+  "SDKVersion": 2,
+  "Software": {
+    "MinimumVersion": "6.7"
+  },
+  "OS": [
+    { "Platform": "mac", "MinimumVersion": "10.15" },
+    { "Platform": "windows", "MinimumVersion": "10" }
+  ],
+  "Nodejs": {
+    "Version": "20",
+    "Debug": "enabled"
+  },
+  "Actions": [
+    {
+      "UUID": "com.easyprompter.streamdeck.play-pause",
+      "Name": "Play / Pause",
+      "Icon": "imgs/actions/play-pause",
+      "Tooltip": "Toggle teleprompter playback",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/play",
+          "Name": "Play"
+        },
+        {
+          "Image": "imgs/actions/pause",
+          "Name": "Pause"
+        }
+      ],
+      "PropertyInspectorPath": "ui/connect.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.speed-up",
+      "Name": "Speed Up",
+      "Icon": "imgs/actions/speed-up",
+      "Tooltip": "Increase teleprompter scroll speed",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/speed-up"
+        }
+      ],
+      "PropertyInspectorPath": "ui/connect.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.speed-down",
+      "Name": "Speed Down",
+      "Icon": "imgs/actions/speed-down",
+      "Tooltip": "Decrease teleprompter scroll speed",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/speed-down"
+        }
+      ],
+      "PropertyInspectorPath": "ui/connect.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.next-marker",
+      "Name": "Next Marker",
+      "Icon": "imgs/actions/next-marker",
+      "Tooltip": "Jump to the next marker in the script",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/next-marker"
+        }
+      ],
+      "PropertyInspectorPath": "ui/connect.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.prev-marker",
+      "Name": "Previous Marker",
+      "Icon": "imgs/actions/prev-marker",
+      "Tooltip": "Jump to the previous marker in the script",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/prev-marker"
+        }
+      ],
+      "PropertyInspectorPath": "ui/connect.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.reset",
+      "Name": "Reset to Start",
+      "Icon": "imgs/actions/reset",
+      "Tooltip": "Reset teleprompter to the beginning of the script",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/reset"
+        }
+      ],
+      "PropertyInspectorPath": "ui/connect.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.speed-dial",
+      "Name": "Speed Control",
+      "Icon": "imgs/actions/speed-dial",
+      "Tooltip": "Adjust teleprompter speed with the dial",
+      "Controllers": ["Encoder"],
+      "Encoder": {
+        "layout": "$B1",
+        "TriggerDescription": {
+          "Rotate": "Adjust speed",
+          "Push": "Reset speed",
+          "Touch": "Toggle play/pause"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/speed-dial"
+        }
+      ],
+      "PropertyInspectorPath": "ui/connect.html"
+    }
+  ]
+}
