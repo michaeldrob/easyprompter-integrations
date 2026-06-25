@@ -12,8 +12,8 @@
  *   both     - Run both in sequence (default)
  *
  * Examples:
- *   node test-dials.mjs https://beta.easyprompter.com ep_rk_abc123 speed
- *   node test-dials.mjs https://beta.easyprompter.com ep_rk_abc123 shuttle
+ *   node test-dials.mjs https://app.easyprompter.com ep_rk_abc123 speed
+ *   node test-dials.mjs https://app.easyprompter.com ep_rk_abc123 shuttle
  */
 
 import { io } from "socket.io-client";
