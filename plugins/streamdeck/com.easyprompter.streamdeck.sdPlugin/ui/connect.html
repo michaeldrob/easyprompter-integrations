@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EasyPrompter</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 12px;
+        color: #d8d8d8;
+        background: transparent;
+        padding: 8px 0;
+      }
+      .field { padding: 6px 16px; }
+      .field label {
+        display: block;
+        font-size: 11px;
+        color: #9e9e9e;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .field input {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #3a3a3a;
+        border-radius: 4px;
+        background: #1a1a1a;
+        color: #e0e0e0;
+        font-size: 12px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .field input:focus { border-color: #00e5ff; }
+      .field input::placeholder { color: #555; }
+      .status-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        margin: 4px 0;
+      }
+      .status-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        transition: background 0.3s;
+      }
+      .status-dot.disconnected { background: #ff4444; }
+      .status-dot.connecting { background: #ffaa00; }
+      .status-dot.connected { background: #44ff44; }
+      .help-text {
+        padding: 4px 16px;
+        font-size: 10px;
+        color: #777;
+        line-height: 1.4;
+      }
+      .divider {
+        border: none;
+        border-top: 1px solid #2a2a2a;
+        margin: 6px 16px;
+      }
+      .branding {
+        text-align: center;
+        padding: 12px 0 4px;
+        font-size: 10px;
+        color: #555;
+      }
+      .branding a { color: #555; text-decoration: none; }
+      .branding a:hover { color: #00e5ff; }
+      .collapsible-header {
+        display: flex; align-items: center; justify-content: space-between;
+        cursor: pointer; padding: 6px 16px; user-select: none;
+      }
+      .collapsible-header .section-title {
+        font-size: 11px; color: #7cacf8; font-weight: 600; letter-spacing: 0.3px;
+      }
+      .collapsible-header .chevron {
+        font-size: 10px; color: #999; transition: transform 0.2s;
+      }
+      .collapsible-header.collapsed .chevron { transform: rotate(-90deg); }
+      .collapsible-body {
+        overflow: hidden; max-height: 500px; transition: max-height 0.25s ease;
+      }
+      .collapsible-body.collapsed { max-height: 0; }
+    </style>
+  </head>
+  <body>
+    <div class="status-row">
+      <span id="statusDot" class="status-dot disconnected"></span>
+      <span id="statusText">Not configured</span>
+    </div>
+    <hr class="divider" />
+    <div id="configHeader" class="collapsible-header">
+      <span class="section-title">Plugin Config</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div id="configBody" class="collapsible-body">
+      <div class="field">
+        <label>Server URL</label>
+        <input id="serverUrl" type="url" placeholder="https://app.easyprompter.com" />
+      </div>
+      <div class="field">
+        <label>API Key</label>
+        <input id="apiKey" type="password" placeholder="ep_rk_..." />
+      </div>
+      <div class="help-text">
+        Find your API key in EasyPrompter under<br/>Settings → Stream Deck / Remote Control.
+      </div>
+    </div>
+    <div class="branding">
+      <a href="https://easyprompter.com" target="_blank">EasyPrompter — Professional Teleprompter</a>
+    </div>
+
+    <script>
+      let websocket = null;
+      let piUUID = null;
+      let globalSettings = {};
+
+      function connectElgatoStreamDeckSocket(inPort, inPropertyInspectorUUID, inRegisterEvent, inInfo, inActionInfo) {
+        piUUID = inPropertyInspectorUUID;
+
+        websocket = new WebSocket("ws://127.0.0.1:" + inPort);
+
+        websocket.onopen = function () {
+          websocket.send(JSON.stringify({ event: inRegisterEvent, uuid: piUUID }));
+          websocket.send(JSON.stringify({ event: "getGlobalSettings", context: piUUID }));
+        };
+
+        websocket.onmessage = function (evt) {
+          const msg = JSON.parse(evt.data);
+          if (msg.event === "didReceiveGlobalSettings" && msg.payload && msg.payload.settings) {
+            globalSettings = msg.payload.settings;
+            document.getElementById("serverUrl").value = globalSettings.serverUrl || "";
+            document.getElementById("apiKey").value = globalSettings.apiKey || "";
+            updateStatus();
+            // Auto-collapse if both fields are populated
+            if (globalSettings.serverUrl && globalSettings.apiKey) {
+              document.getElementById("configHeader").classList.add("collapsed");
+              document.getElementById("configBody").classList.add("collapsed");
+            }
+          }
+        };
+
+        document.getElementById("serverUrl").addEventListener("change", saveGlobalSettings);
+        document.getElementById("apiKey").addEventListener("change", saveGlobalSettings);
+
+        // Collapsible toggle
+        document.getElementById("configHeader").addEventListener("click", function () {
+          this.classList.toggle("collapsed");
+          document.getElementById("configBody").classList.toggle("collapsed");
+        });
+      }
+
+      function saveGlobalSettings() {
+        globalSettings.serverUrl = document.getElementById("serverUrl").value.trim();
+        globalSettings.apiKey = document.getElementById("apiKey").value.trim();
+        if (websocket && websocket.readyState === WebSocket.OPEN) {
+          websocket.send(JSON.stringify({
+            event: "setGlobalSettings",
+            context: piUUID,
+            payload: globalSettings,
+          }));
+        }
+        updateStatus();
+      }
+
+      function updateStatus() {
+        const dot = document.getElementById("statusDot");
+        const text = document.getElementById("statusText");
+        dot.className = "status-dot";
+        if (!globalSettings.serverUrl || !globalSettings.apiKey) {
+          dot.classList.add("disconnected");
+          text.textContent = "Enter server URL and API key";
+        } else {
+          dot.classList.add("connected");
+          text.textContent = "Configured ✓";
+        }
+      }
+    </script>
+  </body>
+</html>

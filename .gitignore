@@ -2,11 +2,12 @@
 node_modules/
 
 # Build output
-com.easyprompter.streamdeck.sdPlugin/bin/
+plugins/streamdeck/com.easyprompter.streamdeck.sdPlugin/bin/
+packages/remote-client/dist/
 *.js.map
 
 # Logs
-com.easyprompter.streamdeck.sdPlugin/logs/
+plugins/streamdeck/com.easyprompter.streamdeck.sdPlugin/logs/
 *.log
 
 # OS files
@@ -21,3 +22,6 @@ Thumbs.db
 # Environment
 .env
 .env.*
+
+# Package manager
+package-lock.json

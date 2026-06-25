@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "outDir": "./com.easyprompter.streamdeck.sdPlugin/bin",
+    "rootDir": "../.."
+  },
+  "include": [
+    "src/**/*.ts",
+    "../../packages/remote-client/src/**/*.ts"
+  ],
+  "exclude": ["node_modules", "com.easyprompter.streamdeck.sdPlugin"]
+}

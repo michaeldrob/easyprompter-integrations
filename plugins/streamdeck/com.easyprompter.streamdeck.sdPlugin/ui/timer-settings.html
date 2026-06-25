@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Timer Settings</title>
+    <style>
+      :root {
+        --bg: #2d2d2d;
+        --bg-input: #3b3b3b;
+        --bg-input-focus: #444;
+        --border: #555;
+        --text: #d8d8d8;
+        --text-dim: #999;
+        --text-label: #9e9e9e;
+        --accent: #7cacf8;
+        --red: #e74c3c;
+        --yellow: #f39c12;
+        --green: #2ecc71;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 12px;
+        padding: 8px 12px;
+        overflow-y: auto;
+      }
+
+      .field {
+        display: flex;
+        align-items: center;
+        padding: 6px 0;
+        gap: 8px;
+      }
+
+      .field-label {
+        flex: 0 0 72px;
+        text-align: right;
+        color: var(--text-label);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+
+      .field-value {
+        flex: 1;
+        min-width: 0;
+      }
+
+      input[type="url"],
+      input[type="password"],
+      select {
+        width: 100%;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        color: var(--text);
+        font-size: 11px;
+        padding: 5px 8px;
+        outline: none;
+        transition: border-color 0.2s, background 0.2s;
+      }
+
+      input:focus, select:focus {
+        border-color: var(--accent);
+        background: var(--bg-input-focus);
+      }
+
+      input::placeholder {
+        color: var(--text-dim);
+        opacity: 0.7;
+      }
+
+      .help-link {
+        padding: 2px 0 8px 80px;
+        font-size: 10px;
+      }
+
+      .help-link a {
+        color: var(--accent);
+        text-decoration: none;
+        opacity: 0.8;
+      }
+
+      .help-link a:hover {
+        opacity: 1;
+        text-decoration: underline;
+      }
+
+      .divider {
+        border: none;
+        border-top: 1px solid #3a3a3a;
+        margin: 6px 0;
+      }
+
+      .status-row {
+        display: flex;
+        align-items: center;
+        padding: 6px 0;
+        gap: 8px;
+      }
+
+      .status-label {
+        flex: 0 0 72px;
+        text-align: right;
+        color: var(--text-label);
+        font-size: 11px;
+      }
+
+      .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--red);
+        flex-shrink: 0;
+        transition: background 0.3s;
+      }
+
+      .status-dot.waiting { background: var(--yellow); }
+      .status-dot.active { background: var(--green); }
+
+      .status-text {
+        font-size: 11px;
+        color: var(--text-dim);
+      }
+
+      .branding {
+        text-align: center;
+        padding: 10px 0 4px;
+        font-size: 10px;
+      }
+
+      .branding a {
+        color: var(--text-dim);
+        text-decoration: none;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+      }
+
+      .branding a:hover {
+        opacity: 1;
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Timer-specific setting -->
+    <div class="field">
+      <div class="field-label">Display</div>
+      <div class="field-value">
+        <select id="timerMode">
+          <option value="elapsed">Elapsed Time</option>
+          <option value="remaining">Remaining Time</option>
+        </select>
+      </div>
+    </div>
+    <hr class="divider" />
+    <div class="field">
+      <div class="field-label">Server URL</div>
+      <div class="field-value">
+        <input id="serverUrl" type="url" placeholder="https://app.easyprompter.com" value="https://app.easyprompter.com" required />
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">API Key</div>
+      <div class="field-value">
+        <input id="apiKey" type="password" placeholder="ep_rk_..." required />
+      </div>
+    </div>
+    <div class="help-link">
+      <a id="settingsLink" href="#" target="_blank">Get your API key in Settings → Remote Control</a>
+    </div>
+    <hr class="divider" />
+    <div class="status-row">
+      <div class="status-label">Status</div>
+      <div class="status-indicator">
+        <span id="statusDot" class="status-dot"></span>
+        <span id="statusText" class="status-text">Not configured</span>
+      </div>
+    </div>
+    <div class="branding">
+      <a href="https://easyprompter.com" target="_blank">EasyPrompter — Professional Teleprompter</a>
+    </div>
+
+    <script>
+      const DEFAULT_URL = "https://app.easyprompter.com";
+      let websocket = null;
+      let uuid = null;
+      let globalSettings = {};
+      let actionSettings = {};
+
+      function connectElgatoStreamDeckSocket(inPort, inPropertyInspectorUUID, inRegisterEvent, _inInfo, inActionInfo) {
+        uuid = inPropertyInspectorUUID;
+
+        // Parse per-action settings for timer mode
+        const parsed = JSON.parse(inActionInfo);
+        actionSettings = parsed.payload.settings || {};
+
+        const timerModeSelect = document.getElementById("timerMode");
+        const serverUrlInput = document.getElementById("serverUrl");
+        const apiKeyInput = document.getElementById("apiKey");
+
+        // Set timer mode from per-action settings
+        if (actionSettings.timerMode) {
+          timerModeSelect.value = actionSettings.timerMode;
+        }
+
+        websocket = new WebSocket("ws://127.0.0.1:" + inPort);
+        websocket.onopen = function () {
+          websocket.send(JSON.stringify({ event: inRegisterEvent, uuid: inPropertyInspectorUUID }));
+          // Request global settings (URL + API key)
+          websocket.send(JSON.stringify({ event: "getGlobalSettings", context: inPropertyInspectorUUID }));
+        };
+        websocket.onmessage = function (evt) {
+          const jsonObj = JSON.parse(evt.data);
+          if (jsonObj.event === "didReceiveGlobalSettings" && jsonObj.payload && jsonObj.payload.settings) {
+            globalSettings = jsonObj.payload.settings;
+            serverUrlInput.value = globalSettings.serverUrl || DEFAULT_URL;
+            apiKeyInput.value = globalSettings.apiKey || "";
+            updateSettingsLink();
+            updateConnectionStatus();
+          }
+          if (jsonObj.event === "didReceiveSettings" && jsonObj.payload && jsonObj.payload.settings) {
+            actionSettings = jsonObj.payload.settings;
+            timerModeSelect.value = actionSettings.timerMode || "elapsed";
+          }
+        };
+
+        // Timer mode — per-action setting
+        timerModeSelect.addEventListener("change", function () {
+          actionSettings.timerMode = this.value;
+          saveActionSettings();
+        });
+
+        // Connection fields — global settings
+        serverUrlInput.addEventListener("change", function () {
+          globalSettings.serverUrl = this.value.trim() || DEFAULT_URL;
+          updateSettingsLink();
+          saveGlobalSettings();
+        });
+        serverUrlInput.addEventListener("blur", function () {
+          const trimmed = this.value.trim() || DEFAULT_URL;
+          if (trimmed !== (globalSettings.serverUrl || "")) {
+            globalSettings.serverUrl = trimmed;
+            this.value = trimmed;
+            updateSettingsLink();
+            saveGlobalSettings();
+          }
+        });
+
+        apiKeyInput.addEventListener("change", function () {
+          globalSettings.apiKey = this.value.trim();
+          saveGlobalSettings();
+        });
+        apiKeyInput.addEventListener("blur", function () {
+          const trimmed = this.value.trim();
+          if (trimmed !== (globalSettings.apiKey || "")) {
+            globalSettings.apiKey = trimmed;
+            saveGlobalSettings();
+          }
+        });
+      }
+
+      function saveGlobalSettings() {
+        updateConnectionStatus();
+        if (websocket && websocket.readyState === WebSocket.OPEN) {
+          websocket.send(JSON.stringify({ event: "setGlobalSettings", context: uuid, payload: globalSettings }));
+        }
+      }
+
+      function saveActionSettings() {
+        if (websocket && websocket.readyState === WebSocket.OPEN) {
+          websocket.send(JSON.stringify({ event: "setSettings", context: uuid, payload: actionSettings }));
+        }
+      }
+
+      function updateSettingsLink() {
+        const link = document.getElementById("settingsLink");
+        const raw = (globalSettings.serverUrl || "https://app.easyprompter.com").replace(/\/+$/, "");
+        // Validate URL protocol to prevent javascript: injection
+        if (/^https?:\/\//i.test(raw)) {
+          link.href = raw + "/app/settings#remoteControl";
+        } else {
+          link.href = "#";
+        }
+      }
+
+      function updateConnectionStatus() {
+        const dot = document.getElementById("statusDot");
+        const text = document.getElementById("statusText");
+
+        dot.classList.remove("waiting", "active");
+
+        if (!globalSettings.serverUrl || !globalSettings.apiKey) {
+          text.textContent = "Not configured";
+        } else {
+          dot.classList.add("waiting");
+          text.textContent = "Configured — plugin will connect";
+        }
+      }
+    </script>
+  </body>
+</html>

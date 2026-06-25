@@ -1,32 +1,14 @@
 {
-  "name": "com.easyprompter.streamdeck",
-  "version": "0.1.0",
-  "description": "Elgato Stream Deck plugin for EasyPrompter — control your teleprompter with hardware buttons",
-  "type": "module",
-  "main": "src/plugin.ts",
+  "name": "easyprompter-devices",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EasyPrompter device plugin monorepo — Stream Deck, Companion, and shared remote-client",
   "scripts": {
-    "build": "rollup -c --environment BUILD:production",
-    "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart com.easyprompter.streamdeck\"",
-    "lint": "eslint src/",
-    "typecheck": "tsc --noEmit"
+    "build": "pnpm -r build",
+    "build:streamdeck": "pnpm --filter streamdeck-plugin build",
+    "build:companion": "pnpm --filter companion-module-easyprompter build",
+    "typecheck": "pnpm -r typecheck"
   },
   "author": "EasyPrompter",
-  "license": "MIT",
-  "devDependencies": {
-    "@elgato/cli": "^1.7.4",
-    "@elgato/schemas": "^0.4.15",
-    "@rollup/plugin-commonjs": "^29.0.2",
-    "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^16.0.0",
-    "@rollup/plugin-typescript": "^12.1.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
-    "eslint": "^9.0.0",
-    "rollup": "^4.28.0",
-    "tslib": "^2.8.0",
-    "typescript": "^5.7.0"
-  },
-  "dependencies": {
-    "@elgato/streamdeck": "^2.0.0"
-  }
+  "license": "MIT"
 }

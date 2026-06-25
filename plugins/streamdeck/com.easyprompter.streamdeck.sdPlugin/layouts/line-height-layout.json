@@ -1,0 +1,64 @@
+{
+  "id": "com.easyprompter.line-height-layout",
+  "items": [
+    {
+      "key": "icon",
+      "type": "pixmap",
+      "rect": [
+        44,
+        5,
+        18,
+        18
+      ]
+    },
+    {
+      "key": "label",
+      "type": "text",
+      "rect": [
+        66,
+        4,
+        100,
+        22
+      ],
+      "font": {
+        "size": 14,
+        "weight": 600
+      },
+      "color": "#CCCCCC",
+      "alignment": "left",
+      "value": "Line Height"
+    },
+    {
+      "key": "lineHeightValue",
+      "type": "text",
+      "rect": [
+        0,
+        30,
+        200,
+        30
+      ],
+      "font": {
+        "size": 24,
+        "weight": 400
+      },
+      "color": "#FFFFFF",
+      "alignment": "center",
+      "value": "—"
+    },
+    {
+      "key": "lineHeightBar",
+      "type": "bar",
+      "rect": [
+        16,
+        78,
+        168,
+        10
+      ],
+      "value": 0,
+      "subtype": 4,
+      "bar_fill_c": "#00E5FF",
+      "bar_bg_c": "#1a1a1a",
+      "border_w": 0
+    }
+  ]
+}

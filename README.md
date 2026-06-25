@@ -1,90 +1,167 @@
-# EasyPrompter Stream Deck Plugin
+# EasyPrompter Hardware Integration
 
-Control your [EasyPrompter](https://easyprompter.com) teleprompter directly from your Elgato Stream Deck.
+Control your [EasyPrompter](https://easyprompter.com) teleprompter from hardware controllers — Elgato Stream Deck and Bitfocus Companion.
+
+This monorepo contains two plugins and a shared connection library. Both plugins connect to your EasyPrompter session via WebSocket and provide real-time, two-way control of playback, speed, formatting, and more.
 
 ## Features
 
-| Action | Type | Description |
-|--------|------|-------------|
-| **Play / Pause** | Keypad | Toggle teleprompter playback. Icon syncs with live state. |
-| **Speed Up** | Keypad | Increase scroll speed |
-| **Speed Down** | Keypad | Decrease scroll speed |
-| **Next Marker** | Keypad | Jump to the next marker in the script |
-| **Previous Marker** | Keypad | Jump to the previous marker in the script |
-| **Reset to Start** | Keypad | Reset teleprompter to the beginning |
-| **Speed Control** | Encoder (SD+) | Rotate to adjust speed, press to reset, touch to play/pause |
+### Elgato Stream Deck Plugin
 
-## Prerequisites
+18 actions with full support for Stream Deck, Stream Deck+, and Stream Deck Neo.
 
-- [Node.js](https://nodejs.org/) v20 or higher
-- [Stream Deck](https://www.elgato.com/downloads) v6.7 or higher
-- [Stream Deck CLI](https://docs.elgato.com/streamdeck/cli/intro): `npm install -g @elgato/cli`
-- An EasyPrompter account with an active teleprompter session
+**Keypad Actions (12)**
 
-## Development Setup
+| Action | Description |
+|---|---|
+| Play / Pause | Toggle teleprompter playback. Icon syncs with live state. |
+| Speed Up | Increase scroll speed |
+| Speed Down | Decrease scroll speed |
+| Next Marker | Jump to the next marker in the script |
+| Previous Marker | Jump to the previous marker |
+| Reset to Start | Reset teleprompter to the beginning |
+| Fast Forward | Hold to fast forward |
+| Rewind | Hold to rewind |
+| Timer | Shows elapsed/remaining time — press to toggle mode |
+| Blackout | Toggle blank screen |
+| Progress | Shows script progress percentage |
+| Script Title | Shows the current script name |
+
+**Encoder / Touch Strip Actions (6)** — *Stream Deck+ and Neo*
+
+| Action | Rotate | Push | Touch |
+|---|---|---|---|
+| Speed Control | Adjust speed | Reset speed | Play / Pause |
+| Font Size | Adjust font size | Configurable | Configurable |
+| Line Height | Adjust line height | Configurable | Configurable |
+| Margin | Adjust margin | Configurable | Configurable |
+| Shuttle Control | Shuttle forward/back (3×–5×) | Configurable | Configurable |
+| Scroll Wheel | Jog scroll position | Configurable | Configurable |
+
+### Bitfocus Companion Module
+
+Full-featured module for the [Bitfocus Companion](https://bitfocus.io/companion) automation platform.
+
+- **21 actions** — playback, speed, formatting, markers, timer, blackout, and more
+- **11 variables** — live state values for use in button labels and triggers
+- **4 feedbacks** — conditional styling based on teleprompter state
+- **24 presets** — ready-to-use button configurations
+
+## Quick Start
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) v20+
+- [pnpm](https://pnpm.io/) v9+
+- For Stream Deck: [Elgato Stream Deck](https://www.elgato.com/downloads) software v6.7+ and the [Stream Deck CLI](https://docs.elgato.com/streamdeck/cli/intro)
+- For Companion: [Bitfocus Companion](https://bitfocus.io/companion) v3+
+
+### Connecting to EasyPrompter
+
+Both plugins require a **Server URL** and **API Key** to connect:
+
+1. Open EasyPrompter → **Settings** → **Remote Control**
+2. Copy the **Server URL** and **API Key**
+3. Enter them in the plugin's connection settings
+
+### Installation & Build
 
 ```bash
-# Install dependencies
-npm install
+# Install all dependencies
+pnpm install
 
-# Build and watch for changes (auto-reloads in Stream Deck)
-npm run watch
+# Build everything
+pnpm build
 
-# Production build
-npm run build
+# Build only the Stream Deck plugin
+pnpm build:streamdeck
+
+# Build only the Companion module
+pnpm build:companion
 ```
-
-## Configuration
-
-1. Drag any EasyPrompter action onto your Stream Deck
-2. In the action settings, enter your EasyPrompter server URL (e.g., `https://app.easyprompter.com`)
-3. The plugin will connect via WebSocket and sync with your teleprompter session
 
 ## Project Structure
 
 ```
-├── com.easyprompter.streamdeck.sdPlugin/   # Compiled plugin directory
-│   ├── bin/                                 # Built JavaScript output
-│   ├── imgs/                                # Action icons and plugin branding
-│   ├── ui/                                  # Property Inspector (settings UI)
-│   └── manifest.json                        # Plugin metadata and action definitions
-├── src/                                     # TypeScript source
-│   ├── actions/                             # Individual action implementations
-│   │   ├── play-pause.ts
-│   │   ├── speed-up.ts
-│   │   ├── speed-down.ts
-│   │   ├── next-marker.ts
-│   │   ├── prev-marker.ts
-│   │   ├── reset.ts
-│   │   └── speed-dial.ts
-│   ├── connection-manager.ts                # WebSocket client for EasyPrompter
-│   ├── plugin.ts                            # Entry point
-│   └── types.ts                             # Shared type definitions
-├── package.json
-├── rollup.config.mjs                        # Build configuration
-└── tsconfig.json
+easyprompter-devices/
+├── packages/
+│   └── remote-client/           # @easyprompter/remote-client
+│       └── src/
+│           ├── connection.ts    # Socket.IO client, reconnection, state sync
+│           ├── manager.ts       # Singleton connection manager
+│           └── types.ts         # Shared type definitions
+├── plugins/
+│   ├── streamdeck/              # Elgato Stream Deck plugin
+│   │   ├── src/
+│   │   │   ├── actions/         # 18 action implementations
+│   │   │   ├── plugin.ts        # Entry point
+│   │   │   └── connection-manager.ts
+│   │   ├── com.easyprompter.streamdeck.sdPlugin/
+│   │   │   ├── manifest.json    # Plugin metadata
+│   │   │   ├── imgs/            # Action icons
+│   │   │   └── ui/              # Property Inspector (settings UI)
+│   │   └── rollup.config.mjs
+│   └── companion/               # Bitfocus Companion module
+│       └── src/
+│           ├── index.ts         # Module entry point
+│           ├── actions.ts       # 21 action definitions
+│           ├── feedbacks.ts     # 4 feedback definitions
+│           ├── variables.ts     # 11 variable definitions
+│           ├── presets.ts       # 24 preset configurations
+│           └── config.ts        # Connection settings
+├── docs/                        # Architecture & design docs
+├── package.json                 # Workspace root
+├── pnpm-workspace.yaml
+└── tsconfig.base.json           # Shared TypeScript config
 ```
 
 ## Architecture
 
-The plugin communicates with EasyPrompter via WebSocket:
-
 ```
-Stream Deck ←→ Plugin (Node.js) ←→ WebSocket ←→ EasyPrompter Server
+Hardware Device ←→ Plugin (Node.js) ←→ Socket.IO ←→ EasyPrompter Server
 ```
 
-- **ConnectionManager** maintains a single WebSocket connection per server URL, shared across all actions
-- Actions subscribe to state updates and send commands through the connection manager
-- Automatic reconnection with exponential backoff handles network interruptions
+The `@easyprompter/remote-client` package provides a shared connection layer used by both plugins:
 
-## Building for Distribution
+- **Socket.IO WebSocket** connection to the EasyPrompter web app
+- **Automatic reconnection** with exponential backoff
+- **Real-time state sync** — teleprompter state is pushed to the hardware on every change
+- **Throttled notifications** to avoid flooding the server during rapid adjustments
+
+## Development
+
+### Stream Deck
 
 ```bash
-npm run build
+# Watch mode — rebuilds and reloads the plugin on changes
+cd plugins/streamdeck
+pnpm watch
 ```
 
-The compiled plugin is in `com.easyprompter.streamdeck.sdPlugin/`. To package for Marketplace distribution, see the [Elgato distribution guide](https://docs.elgato.com/streamdeck/sdk/introduction/distribution).
+The compiled plugin lives in `com.easyprompter.streamdeck.sdPlugin/`. To package for distribution:
+
+```bash
+streamdeck pack com.easyprompter.streamdeck.sdPlugin
+```
+
+### Companion
+
+```bash
+# Watch mode — recompiles on changes
+cd plugins/companion
+pnpm dev
+
+# Package for distribution
+pnpm package
+```
+
+### Type Checking
+
+```bash
+# Type-check all packages
+pnpm typecheck
+```
 
 ## License
 
-MIT
+[MIT](LICENSE)

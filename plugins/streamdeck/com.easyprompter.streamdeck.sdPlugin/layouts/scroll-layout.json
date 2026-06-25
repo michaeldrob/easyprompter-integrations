@@ -1,0 +1,24 @@
+{
+  "id": "com.easyprompter.scroll-layout",
+  "items": [
+    {
+      "key": "icon",
+      "type": "pixmap",
+      "rect": [65, 5, 18, 18]
+    },
+    {
+      "key": "label",
+      "type": "text",
+      "rect": [87, 4, 58, 22],
+      "font": { "size": 14, "weight": 600 },
+      "color": "#CCCCCC",
+      "alignment": "left",
+      "value": "Scroll"
+    },
+    {
+      "key": "directionIcon",
+      "type": "pixmap",
+      "rect": [84, 38, 32, 32]
+    }
+  ]
+}

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Icon Generator</title>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    body { background: #1a1a1a; color: #fff; font-family: monospace; padding: 20px; }
+    .icon-row { display: flex; align-items: center; gap: 16px; margin: 8px 0; }
+    .icon-row canvas { border: 1px solid #333; }
+    .icon-row .label { width: 160px; }
+    .icon-row textarea { width: 400px; height: 20px; font-size: 10px; }
+    h2 { margin-top: 24px; color: #0ef; }
+    #output { margin-top: 20px; white-space: pre; font-size: 11px; background: #000; padding: 16px; border-radius: 8px; max-height: 600px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h1>Companion Icon Generator</h1>
+  <p>Renders exact Lucide icons → 72×72 PNG → base64</p>
+
+  <div id="icons"></div>
+  <h2>icons.ts output:</h2>
+  <pre id="output"></pre>
+
+  <script>
+    // Icon definitions matching the operator HUD
+    // "full" = centered 44px for icon-only transport buttons
+    // "top"  = 28px in upper portion for text+icon buttons
+    const ICON_DEFS = {
+      // Transport (full size, centered)
+      play:         { icon: "Play",          mode: "full", circle: true },
+      pause:        { icon: "Pause",         mode: "full", circle: true },
+      reset:        { icon: "RotateCcw",     mode: "full" },
+      fast_forward: { icon: "ChevronsRight", mode: "full" },
+      rewind:       { icon: "ChevronsLeft",  mode: "full" },
+
+      // Markers are composites (rendered separately below)
+
+      // Blackout (top icons with text below)
+      eye:     { icon: "Eye",    mode: "top" },
+      eye_off: { icon: "EyeOff", mode: "top" },
+
+      // Info/encoder icons
+      a_large_small:   { icon: "ALargeSmall",    mode: "top" },
+      list_chevrons:   { icon: "ListChevronsUpDown", mode: "top" },
+      align_h_space:   { icon: "AlignHorizontalSpaceAround", mode: "top" },
+      gauge:           { icon: "Gauge",          mode: "top" },
+      rotate_cw:       { icon: "RotateCw",       mode: "top" },
+      radio:           { icon: "Radio",          mode: "top" },
+      radio_off:       { icon: "RadioOff",       mode: "top" },
+    };
+
+    const CANVAS_SIZE = 72;
+
+    function createLucideSVG(iconName, size) {
+      const el = document.createElement("div");
+      el.innerHTML = `<i data-lucide="${iconName}" style="width:${size}px;height:${size}px;color:white;"></i>`;
+      document.body.appendChild(el);
+      lucide.createIcons({ nodes: el.querySelectorAll("[data-lucide]") });
+      const svg = el.querySelector("svg");
+      // Set explicit size
+      svg.setAttribute("width", size);
+      svg.setAttribute("height", size);
+      // Force white stroke
+      svg.querySelectorAll("*").forEach(n => {
+        if (n.getAttribute("stroke")) n.setAttribute("stroke", "white");
+      });
+      const svgStr = new XMLSerializer().serializeToString(svg);
+      document.body.removeChild(el);
+      return svgStr;
+    }
+
+    async function svgToCanvas(svgStr, x, y) {
+      const canvas = document.createElement("canvas");
+      canvas.width = CANVAS_SIZE;
+      canvas.height = CANVAS_SIZE;
+      const ctx = canvas.getContext("2d");
+
+      const img = new Image();
+      const blob = new Blob([svgStr], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+
+      return new Promise((resolve) => {
+        img.onload = () => {
+          ctx.drawImage(img, x, y);
+          URL.revokeObjectURL(url);
+          resolve(canvas);
+        };
+        img.src = url;
+      });
+    }
+
+    async function renderIcon(def) {
+      let size, x, y;
+      if (def.mode === "full") {
+        size = 44;
+        x = (CANVAS_SIZE - size) / 2;
+        y = (CANVAS_SIZE - size) / 2;
+      } else {
+        size = 28;
+        x = (CANVAS_SIZE - size) / 2;
+        y = 4;
+      }
+
+      const svgStr = createLucideSVG(def.icon, size);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = CANVAS_SIZE;
+      canvas.height = CANVAS_SIZE;
+      const ctx = canvas.getContext("2d");
+
+      // Draw circle background for play/pause
+      if (def.circle) {
+        ctx.beginPath();
+        ctx.arc(36, 36, 30, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.15)";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.3)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // Draw SVG icon
+      const img = new Image();
+      const blob = new Blob([svgStr], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+
+      return new Promise((resolve) => {
+        img.onload = () => {
+          ctx.drawImage(img, x, y);
+          URL.revokeObjectURL(url);
+          resolve(canvas);
+        };
+        img.src = url;
+      });
+    }
+
+    // Composite marker icons: ChevronLeft/Right + Bookmark
+    async function renderMarkerIcon(direction) {
+      const canvas = document.createElement("canvas");
+      canvas.width = CANVAS_SIZE;
+      canvas.height = CANVAS_SIZE;
+      const ctx = canvas.getContext("2d");
+
+      const chevronSize = 22;
+      const bookmarkSize = 30;
+
+      if (direction === "prev") {
+        // Chevron left + bookmark
+        const chevSvg = createLucideSVG("ChevronLeft", chevronSize);
+        const bmSvg = createLucideSVG("Bookmark", bookmarkSize);
+
+        const chevImg = await loadImage(chevSvg);
+        const bmImg = await loadImage(bmSvg);
+
+        ctx.drawImage(chevImg, 6, (CANVAS_SIZE - chevronSize) / 2);
+        ctx.drawImage(bmImg, 24, (CANVAS_SIZE - bookmarkSize) / 2);
+      } else {
+        // Bookmark + chevron right
+        const bmSvg = createLucideSVG("Bookmark", bookmarkSize);
+        const chevSvg = createLucideSVG("ChevronRight", chevronSize);
+
+        const bmImg = await loadImage(bmSvg);
+        const chevImg = await loadImage(chevSvg);
+
+        ctx.drawImage(bmImg, 12, (CANVAS_SIZE - bookmarkSize) / 2);
+        ctx.drawImage(chevImg, 38, (CANVAS_SIZE - chevronSize) / 2);
+      }
+
+      return canvas;
+    }
+
+    function loadImage(svgStr) {
+      const img = new Image();
+      const blob = new Blob([svgStr], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      return new Promise((resolve) => {
+        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+        img.src = url;
+      });
+    }
+
+    async function main() {
+      const container = document.getElementById("icons");
+      const results = {};
+
+      // Render standard icons
+      for (const [name, def] of Object.entries(ICON_DEFS)) {
+        const canvas = await renderIcon(def);
+        const b64 = canvas.toDataURL("image/png").replace("data:image/png;base64,", "");
+        results[name] = b64;
+
+        const row = document.createElement("div");
+        row.className = "icon-row";
+        row.innerHTML = `<span class="label">${name}</span>`;
+        row.appendChild(canvas);
+        container.appendChild(row);
+      }
+
+      // Render composite marker icons
+      for (const [name, dir] of [["skip_back", "prev"], ["skip_forward", "next"]]) {
+        const canvas = await renderMarkerIcon(dir);
+        const b64 = canvas.toDataURL("image/png").replace("data:image/png;base64,", "");
+        results[name] = b64;
+
+        const row = document.createElement("div");
+        row.className = "icon-row";
+        row.innerHTML = `<span class="label">${name}</span>`;
+        row.appendChild(canvas);
+        container.appendChild(row);
+      }
+
+      // Output as TypeScript
+      let ts = `// Auto-generated icon PNGs for Companion presets\n`;
+      ts += `// Rendered from Lucide icons matching the operator HUD\n`;
+      ts += `export const ICONS = {\n`;
+      for (const [name, b64] of Object.entries(results)) {
+        ts += `  ${name}: "${b64}",\n`;
+      }
+      ts += `} as const;\n`;
+
+      document.getElementById("output").textContent = ts;
+    }
+
+    // Wait for Lucide to load
+    window.addEventListener("load", () => setTimeout(main, 500));
+  </script>
+</body>
+</html>

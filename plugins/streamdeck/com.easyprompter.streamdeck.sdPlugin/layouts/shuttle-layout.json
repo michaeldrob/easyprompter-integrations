@@ -1,0 +1,28 @@
+{
+  "id": "com.easyprompter.shuttle-layout",
+  "items": [
+    {
+      "key": "icon",
+      "type": "pixmap",
+      "rect": [61, 5, 18, 18]
+    },
+    {
+      "key": "label",
+      "type": "text",
+      "rect": [83, 4, 66, 22],
+      "font": { "size": 14, "weight": 600 },
+      "color": "#CCCCCC",
+      "alignment": "left",
+      "value": "Shuttle"
+    },
+    {
+      "key": "shuttleValue",
+      "type": "text",
+      "rect": [0, 28, 200, 64],
+      "font": { "size": 32, "weight": 400 },
+      "color": "#FFFFFF",
+      "alignment": "center",
+      "value": "\u25ae\u25ae"
+    }
+  ]
+}

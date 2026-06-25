@@ -1,0 +1,318 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "UUID": "com.easyprompter.streamdeck",
+  "Name": "EasyPrompter",
+  "Version": "0.1.0",
+  "Author": "EasyPrompter",
+  "Description": "Control your EasyPrompter teleprompter from your Stream Deck. Play, pause, adjust speed, and navigate markers with hardware buttons.",
+  "URL": "https://easyprompter.com",
+  "Category": "EasyPrompter",
+  "CategoryIcon": "imgs/category-icon",
+  "Icon": "imgs/plugin-icon",
+  "CodePath": "bin/plugin.js",
+  "SDKVersion": 2,
+  "Software": {
+    "MinimumVersion": "6.7"
+  },
+  "OS": [
+    { "Platform": "mac", "MinimumVersion": "10.15" },
+    { "Platform": "windows", "MinimumVersion": "10" }
+  ],
+  "Nodejs": {
+    "Version": "20",
+    "Debug": "enabled"
+  },
+  "Actions": [
+    {
+      "UUID": "com.easyprompter.streamdeck.play-pause",
+      "Name": "Play / Pause",
+      "Icon": "imgs/actions/play-pause",
+      "Tooltip": "Toggle teleprompter playback",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/play",
+          "Name": "Play"
+        },
+        {
+          "Image": "imgs/actions/pause",
+          "Name": "Pause"
+        }
+      ],
+      "PropertyInspectorPath": "ui/connect.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.speed-up",
+      "Name": "Speed Up",
+      "Icon": "imgs/actions/speed-up",
+      "Tooltip": "Increase teleprompter scroll speed",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/speed-up"
+        }
+      ],
+      "PropertyInspectorPath": "ui/button-settings.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.speed-down",
+      "Name": "Speed Down",
+      "Icon": "imgs/actions/speed-down",
+      "Tooltip": "Decrease teleprompter scroll speed",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/speed-down"
+        }
+      ],
+      "PropertyInspectorPath": "ui/button-settings.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.next-marker",
+      "Name": "Next Marker",
+      "Icon": "imgs/actions/next-marker",
+      "Tooltip": "Jump to the next marker in the script",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/next-marker"
+        }
+      ],
+      "PropertyInspectorPath": "ui/connect.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.prev-marker",
+      "Name": "Previous Marker",
+      "Icon": "imgs/actions/prev-marker",
+      "Tooltip": "Jump to the previous marker in the script",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/prev-marker"
+        }
+      ],
+      "PropertyInspectorPath": "ui/connect.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.reset",
+      "Name": "Reset to Start",
+      "Icon": "imgs/actions/reset",
+      "Tooltip": "Reset teleprompter to the beginning of the script",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/reset"
+        }
+      ],
+      "PropertyInspectorPath": "ui/connect.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.speed-dial",
+      "Name": "Speed Control",
+      "Icon": "imgs/actions/speed-dial",
+      "Tooltip": "Adjust teleprompter speed with the dial",
+      "Controllers": ["Encoder"],
+      "Encoder": {
+        "layout": "layouts/speed-layout.json",
+        "TriggerDescription": {
+          "Rotate": "Adjust speed",
+          "Push": "Reset speed",
+          "Touch": "Toggle play/pause"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/speed-dial"
+        }
+      ],
+      "PropertyInspectorPath": "ui/encoder-settings.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.font-size",
+      "Name": "Font Size",
+      "Icon": "imgs/actions/font-size",
+      "Tooltip": "Adjust teleprompter font size with the dial",
+      "Controllers": ["Encoder"],
+      "Encoder": {
+        "layout": "layouts/font-layout.json",
+        "TriggerDescription": {
+          "Rotate": "Adjust font size",
+          "Push": "Configurable action",
+          "Touch": "Configurable action"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/font-size"
+        }
+      ],
+      "PropertyInspectorPath": "ui/encoder-settings.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.line-height",
+      "Name": "Line Height",
+      "Icon": "imgs/actions/line-height",
+      "Tooltip": "Adjust teleprompter line height with the dial",
+      "Controllers": ["Encoder"],
+      "Encoder": {
+        "layout": "layouts/line-height-layout.json",
+        "TriggerDescription": {
+          "Rotate": "Adjust line height",
+          "Push": "Configurable action",
+          "Touch": "Configurable action"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/line-height"
+        }
+      ],
+      "PropertyInspectorPath": "ui/encoder-settings.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.margin",
+      "Name": "Margin",
+      "Icon": "imgs/actions/margin",
+      "Tooltip": "Adjust teleprompter screen margin with the dial",
+      "Controllers": ["Encoder"],
+      "Encoder": {
+        "layout": "layouts/margin-layout.json",
+        "TriggerDescription": {
+          "Rotate": "Adjust margin",
+          "Push": "Configurable action",
+          "Touch": "Configurable action"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/margin"
+        }
+      ],
+      "PropertyInspectorPath": "ui/encoder-settings.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.fast-forward",
+      "Name": "Fast Forward",
+      "Icon": "imgs/actions/fast-forward",
+      "Tooltip": "Hold to fast forward the teleprompter",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/fast-forward"
+        }
+      ],
+      "PropertyInspectorPath": "ui/connect.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.rewind",
+      "Name": "Rewind",
+      "Icon": "imgs/actions/rewind",
+      "Tooltip": "Hold to rewind the teleprompter",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/rewind"
+        }
+      ],
+      "PropertyInspectorPath": "ui/connect.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.timer",
+      "Name": "Timer",
+      "Icon": "imgs/actions/timer",
+      "Tooltip": "Displays elapsed or remaining session time. Press to toggle mode.",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/timer"
+        }
+      ],
+      "PropertyInspectorPath": "ui/display-settings.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.shuttle-dial",
+      "Name": "Shuttle Control",
+      "Icon": "imgs/actions/shuttle-dial",
+      "Tooltip": "Use the dial to shuttle (variable speed scroll) the teleprompter",
+      "Controllers": ["Encoder"],
+      "Encoder": {
+        "layout": "layouts/shuttle-layout.json",
+        "TriggerDescription": {
+          "Rotate": "Shuttle scroll",
+          "Push": "Reset position",
+          "Touch": "Toggle play/pause"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/shuttle-dial"
+        }
+      ],
+      "PropertyInspectorPath": "ui/encoder-settings.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.scroll-wheel",
+      "Name": "Scroll Wheel",
+      "Icon": "imgs/actions/scroll-wheel",
+      "Tooltip": "Use the dial to jog (nudge) the teleprompter position",
+      "Controllers": ["Encoder"],
+      "Encoder": {
+        "layout": "layouts/scroll-layout.json",
+        "TriggerDescription": {
+          "Rotate": "Jog scroll position",
+          "Push": "Toggle play/pause"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/scroll-wheel"
+        }
+      ],
+      "PropertyInspectorPath": "ui/encoder-settings.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.blackout",
+      "Name": "Blackout",
+      "Icon": "imgs/actions/blackout-off",
+      "Tooltip": "Toggle blackout (blank screen) on the teleprompter display",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/blackout-off",
+          "Name": "Blackout Off"
+        },
+        {
+          "Image": "imgs/actions/blackout-on",
+          "Name": "Blackout On"
+        }
+      ],
+      "PropertyInspectorPath": "ui/connect.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.progress",
+      "Name": "Progress",
+      "Icon": "imgs/actions/progress",
+      "Tooltip": "Displays script progress percentage",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/progress"
+        }
+      ],
+      "PropertyInspectorPath": "ui/display-settings.html"
+    },
+    {
+      "UUID": "com.easyprompter.streamdeck.script-title",
+      "Name": "Script Title",
+      "Icon": "imgs/actions/script-title",
+      "Tooltip": "Displays the current script title",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/script-title"
+        }
+      ],
+      "PropertyInspectorPath": "ui/display-settings.html"
+    }
+  ]
+}
