@@ -1,5 +1,6 @@
 {
   "id": "easyprompter",
+  "type": "connection",
   "name": "EasyPrompter",
   "shortname": "EP",
   "description": "Control EasyPrompter teleprompter — play/pause, speed, markers, timer",
@@ -8,8 +9,8 @@
   "keywords": ["teleprompter", "prompter", "scroll", "broadcast"],
   "version": "1.0.0",
   "license": "MIT",
-  "repository": "git+https://github.com/michaeldrob/easyprompter-streamdeck.git",
-  "bugs": "https://github.com/michaeldrob/easyprompter-streamdeck/issues",
+  "repository": "git+https://github.com/michaeldrob/easyprompter-integrations.git",
+  "bugs": "https://github.com/michaeldrob/easyprompter-integrations/issues",
   "maintainers": [
     {
       "name": "Michael Drob"

@@ -239,6 +239,11 @@ export class EasyPrompterModule extends InstanceBase {
             clearTimeout(this._timerSyncTimer);
             this._timerSyncTimer = null;
         }
+        // Clear speed debounce
+        if (this._speedDebounceTimer) {
+            clearTimeout(this._speedDebounceTimer);
+            this._speedDebounceTimer = null;
+        }
         // Only reset connection-dependent values; keep last-known progress,
         // timer, script title, and display settings so they persist across
         // reconnects rather than flashing to zero.
