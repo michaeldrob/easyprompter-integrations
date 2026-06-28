@@ -2,7 +2,7 @@
   "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
   "UUID": "com.easyprompter.streamdeck",
   "Name": "EasyPrompter",
-  "Version": "0.1.0.0",
+  "Version": "0.2.0.0",
   "Author": "EasyPrompter",
   "Description": "Control your EasyPrompter teleprompter from your Stream Deck. Play, pause, adjust speed, and navigate markers with hardware buttons.",
   "URL": "https://easyprompter.com",
