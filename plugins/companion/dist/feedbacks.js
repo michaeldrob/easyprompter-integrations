@@ -1,7 +1,9 @@
 import { combineRgb } from "@companion-module/base";
+import { ICONS } from "./icons.js";
+import { FEEDBACK } from "./constants.js";
 export function getFeedbackDefinitions(instance) {
     return {
-        is_playing: {
+        [FEEDBACK.IS_PLAYING]: {
             type: "boolean",
             name: "Prompter is Playing",
             description: "Changes button style when the teleprompter is playing",
@@ -14,7 +16,7 @@ export function getFeedbackDefinitions(instance) {
                 return instance.isPlaying;
             },
         },
-        is_connected: {
+        [FEEDBACK.IS_CONNECTED]: {
             type: "boolean",
             name: "Connected to Server",
             description: "Changes button style when connected and session is active",
@@ -27,7 +29,7 @@ export function getFeedbackDefinitions(instance) {
                 return instance.connectionState === "active";
             },
         },
-        is_waiting: {
+        [FEEDBACK.IS_WAITING]: {
             type: "boolean",
             name: "Waiting for Session",
             description: "Changes button style when connected but no session is active",
@@ -40,7 +42,7 @@ export function getFeedbackDefinitions(instance) {
                 return instance.connectionState === "waiting";
             },
         },
-        is_blackout: {
+        [FEEDBACK.IS_BLACKOUT]: {
             type: "boolean",
             name: "Blackout Active",
             description: "Changes button style when the display is blacked out",
@@ -51,6 +53,50 @@ export function getFeedbackDefinitions(instance) {
             options: [],
             callback: () => {
                 return instance.isBlackout;
+            },
+        },
+        [FEEDBACK.IS_ACTIVE_SCRIPT]: {
+            type: "boolean",
+            name: "Script is Active",
+            description: "Shows green bar when this button's configured script is the currently loaded one",
+            defaultStyle: {
+                png64: ICONS.bar_green,
+                pngalignment: "center:top",
+            },
+            options: [],
+            callback: (feedback) => {
+                const scriptId = instance.subscribedScripts.get(feedback.controlId);
+                return !!(scriptId && scriptId === instance.currentScriptId);
+            },
+        },
+        [FEEDBACK.IS_LOADING_SCRIPT]: {
+            type: "boolean",
+            name: "Script is Loading",
+            description: "Shows orange bar while this button's configured script is being loaded",
+            defaultStyle: {
+                png64: ICONS.bar_orange,
+                pngalignment: "center:top",
+                text: "⏳",
+            },
+            options: [],
+            callback: (feedback) => {
+                const scriptId = instance.subscribedScripts.get(feedback.controlId);
+                return !!(scriptId && scriptId === instance.loadingScriptId);
+            },
+        },
+        [FEEDBACK.IS_FAILED_SCRIPT]: {
+            type: "boolean",
+            name: "Script Load Failed",
+            description: "Shows red bar when this button's configured script fails to load (timeout)",
+            defaultStyle: {
+                png64: ICONS.bar_red,
+                pngalignment: "center:top",
+                text: "✕",
+            },
+            options: [],
+            callback: (feedback) => {
+                const scriptId = instance.subscribedScripts.get(feedback.controlId);
+                return !!(scriptId && scriptId === instance.failedScriptId);
             },
         },
     };

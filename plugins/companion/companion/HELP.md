@@ -1,6 +1,6 @@
 # EasyPrompter — Companion Module
 
-Control your EasyPrompter teleprompter directly from Bitfocus Companion. Includes transport controls, speed/display adjustments, MIDI shuttle/jog support, real-time variables, and ready-made presets.
+Control your EasyPrompter teleprompter directly from Bitfocus Companion. Includes transport controls, speed/display adjustments, script loading, MIDI shuttle/jog support, real-time variables, and ready-made presets.
 
 ---
 
@@ -13,7 +13,7 @@ Control your EasyPrompter teleprompter directly from Bitfocus Companion. Include
 
 ---
 
-## Actions (21)
+## Actions (22)
 
 ### Transport
 
@@ -48,6 +48,12 @@ Control your EasyPrompter teleprompter directly from Bitfocus Companion. Include
 | Margin Up | Increase screen margin (step 1–30%, default 5) |
 | Margin Down | Decrease screen margin |
 
+### Scripts
+
+| Action | Description |
+|--------|-------------|
+| Load Script | Load a specific script by selecting it from the dropdown. Shows active/loading/failed status via feedback bars. |
+
 ### Advanced / MIDI
 
 | Action | Description |
@@ -58,7 +64,7 @@ Control your EasyPrompter teleprompter directly from Bitfocus Companion. Include
 
 ---
 
-## Variables (11)
+## Variables (12)
 
 Use these on button labels with the `$(easyprompter:…)` syntax.
 
@@ -69,16 +75,17 @@ Use these on button labels with the `$(easyprompter:…)` syntax.
 | `$(easyprompter:elapsed)` | Elapsed time | `05:23` |
 | `$(easyprompter:remaining)` | Remaining time | `12:45` |
 | `$(easyprompter:progress)` | Progress (%) | `45` |
-| `$(easyprompter:is_playing)` | Playing state | `true` / `false` |
+| `$(easyprompter:is_playing)` | Playing state | `Playing` / `Paused` |
 | `$(easyprompter:font_size)` | Font size (px) | `72` |
 | `$(easyprompter:line_height)` | Line height (%) | `150` |
 | `$(easyprompter:script_title)` | Script title | `My Speech` |
-| `$(easyprompter:blackout)` | Blackout state | `On` / `Off` |
+| `$(easyprompter:script_id)` | Current script ID | `RKt5EWvfJ0g` |
+| `$(easyprompter:blackout)` | Blackout state | `ON` / `OFF` |
 | `$(easyprompter:screen_margin)` | Screen margin (%) | `10` |
 
 ---
 
-## Feedbacks (4)
+## Feedbacks (7)
 
 | Feedback | When Active | Default Style |
 |----------|-------------|---------------|
@@ -86,17 +93,21 @@ Use these on button labels with the `$(easyprompter:…)` syntax.
 | Connected to Server | Connected with active session | Blue background |
 | Waiting for Session | Connected but no active session | Yellow background |
 | Blackout Active | Display is blacked out | Red background |
+| Script is Active | Configured script is the currently loaded one | Green top bar |
+| Script is Loading | Configured script is being loaded | Orange top bar + ⏳ |
+| Script Load Failed | Configured script failed to load (timeout) | Red top bar + ✕ |
 
 ---
 
-## Presets (24)
+## Presets (25)
 
-Drag-and-drop presets are organized into four categories:
+Drag-and-drop presets are organized into five categories:
 
 - **Transport** (7) — Play/Pause, Reset, Next Marker, Previous Marker, Fast Forward, Rewind, Blackout
 - **Speed** (3) — Speed Display, Speed Up, Speed Down
-- **Info & Timers** (9) — Connection Status, Script Title, Progress, Elapsed Time, Remaining Time, Font Size, Line Height, Margin Display
+- **Info & Timers** (8) — Connection Status, Script Title, Progress, Elapsed Time, Remaining Time, Font Size, Line Height, Margin Display
 - **Encoders / Knobs** (5) — Speed Knob, Jog Wheel, Font Size Knob, Line Height Knob, Margin Knob
+- **Scripts** (1) — Load Script (with active/loading/failed status bars)
 
 ---
 
@@ -105,3 +116,5 @@ Drag-and-drop presets are organized into four categories:
 - **Status shows "Connecting"** — Check that the Server URL is correct and reachable
 - **Status shows "Waiting"** — Connected but no teleprompter session is active; open a script in EasyPrompter
 - **Actions don't work** — Ensure a teleprompter session is active (status must be green/connected)
+- **Script button stays orange** — Loading timed out after 8 seconds; check your connection and try again
+- **Empty script dropdown** — Ensure you have scripts in your EasyPrompter account and that the API key has access

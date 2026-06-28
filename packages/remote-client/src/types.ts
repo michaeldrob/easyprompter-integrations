@@ -34,7 +34,8 @@ export type RemoteControlAction =
   | { type: "font_size_step"; delta: number }
   | { type: "line_height_step"; delta: number }
   | { type: "margin_step"; delta: number }
-  | { type: "blackout_toggle" };
+  | { type: "blackout_toggle" }
+  | { type: "switch_script"; scriptId: string };
 
 /**
  * Playback state received from the server.
@@ -84,4 +85,5 @@ export interface SettingsData {
  */
 export interface ScriptInfo {
   scriptTitle?: string;
+  scriptId?: string;
 }

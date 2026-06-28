@@ -4,6 +4,7 @@ import {
   type CompanionPresetSection,
 } from "@companion-module/base";
 import { ICONS } from "./icons.js";
+import { FEEDBACK } from "./constants.js";
 
 export function getPresetSections(): CompanionPresetSection[] {
   return [
@@ -26,6 +27,11 @@ export function getPresetSections(): CompanionPresetSection[] {
       id: "encoders",
       name: "Encoders / Knobs",
       definitions: ["speed_knob", "jog_wheel", "font_size_knob", "line_height_knob", "margin_knob"],
+    },
+    {
+      id: "scripts",
+      name: "Scripts",
+      definitions: ["load_script"],
     },
   ];
 }
@@ -62,7 +68,7 @@ export function getPresetDefinitions(): CompanionPresetDefinitions {
       ],
       feedbacks: [
         {
-          feedbackId: "is_playing",
+          feedbackId: FEEDBACK.IS_PLAYING,
           options: {},
           style: {
             bgcolor: green,
@@ -282,14 +288,14 @@ export function getPresetDefinitions(): CompanionPresetDefinitions {
       steps: [],
       feedbacks: [
         {
-          feedbackId: "is_connected",
+          feedbackId: FEEDBACK.IS_CONNECTED,
           options: {},
           style: {
             bgcolor: combineRgb(0, 100, 200),
           },
         },
         {
-          feedbackId: "is_waiting",
+          feedbackId: FEEDBACK.IS_WAITING,
           options: {},
           style: {
             bgcolor: combineRgb(200, 200, 0),
@@ -322,7 +328,7 @@ export function getPresetDefinitions(): CompanionPresetDefinitions {
       ],
       feedbacks: [
         {
-          feedbackId: "is_playing",
+          feedbackId: FEEDBACK.IS_PLAYING,
           options: {},
           style: {
             bgcolor: darkGreen,
@@ -427,7 +433,7 @@ export function getPresetDefinitions(): CompanionPresetDefinitions {
     // --- Info ---
     script_title_display: {
       type: "simple",
-      name: "Script Title",
+      name: "Current Script Title",
       style: {
         text: "$(easyprompter:script_title)",
         size: "auto",
@@ -523,12 +529,59 @@ export function getPresetDefinitions(): CompanionPresetDefinitions {
       ],
       feedbacks: [
         {
-          feedbackId: "is_blackout",
+          feedbackId: FEEDBACK.IS_BLACKOUT,
           options: {},
           style: {
             bgcolor: combineRgb(204, 0, 0),
             color: white,
             png64: ICONS.eye_off,
+          },
+        },
+      ],
+    },
+
+    // --- Scripts ---
+    load_script: {
+      type: "simple",
+      name: "Load Script",
+      style: {
+        text: "LOAD SCRIPT",
+        size: 14,
+        color: combineRgb(255, 255, 255),
+        bgcolor: combineRgb(30, 30, 30),
+        png64: ICONS.bar_teal,
+        pngalignment: "center:top",
+        show_topbar: false,
+      },
+      steps: [
+        {
+          down: [{ actionId: "load_script", options: { scriptId: "" } }],
+          up: [],
+        },
+      ],
+      feedbacks: [
+        {
+          feedbackId: FEEDBACK.IS_ACTIVE_SCRIPT,
+          options: {},
+          style: {
+            png64: ICONS.bar_green,
+            pngalignment: "center:top",
+          },
+        },
+        {
+          feedbackId: FEEDBACK.IS_LOADING_SCRIPT,
+          options: {},
+          style: {
+            png64: ICONS.bar_orange,
+            pngalignment: "center:top",
+          },
+        },
+        {
+          feedbackId: FEEDBACK.IS_FAILED_SCRIPT,
+          options: {},
+          style: {
+            png64: ICONS.bar_red,
+            pngalignment: "center:top",
           },
         },
       ],

@@ -26,6 +26,7 @@ type ConnectionStateListener = (state: ConnectionState) => void;
 type TimerListener = (data: TimerData) => void;
 type SettingsListener = (data: SettingsData) => void;
 type ScriptInfoListener = (data: ScriptInfo) => void;
+type ScriptsChangedListener = () => void;
 
 /**
  * Derive a stable UUID-format clientId from the API key so the same
@@ -58,6 +59,7 @@ export class EasyPrompterConnection {
   private timerListeners = new Set<TimerListener>();
   private settingsListeners = new Set<SettingsListener>();
   private scriptInfoListeners = new Set<ScriptInfoListener>();
+  private scriptsChangedListeners = new Set<ScriptsChangedListener>();
 
   private _connectionState: ConnectionState = "disconnected";
   private _lastState: PrompterState | null = null;
@@ -94,6 +96,10 @@ export class EasyPrompterConnection {
 
   get lastState(): PrompterState | null {
     return this._lastState;
+  }
+
+  get lastScriptInfo(): ScriptInfo | null {
+    return this._lastScriptInfo;
   }
 
   /**
@@ -157,6 +163,16 @@ export class EasyPrompterConnection {
       listener(this._lastScriptInfo);
     }
     return () => this.scriptInfoListeners.delete(listener);
+  }
+
+  /**
+   * Subscribe to scripts_changed notifications.
+   * Fired when the user's script list changes (create, delete, rename, restore).
+   * Returns an unsubscribe function.
+   */
+  onScriptsChanged(listener: ScriptsChangedListener): () => void {
+    this.scriptsChangedListeners.add(listener);
+    return () => this.scriptsChangedListeners.delete(listener);
   }
 
   /**
@@ -241,12 +257,24 @@ export class EasyPrompterConnection {
       });
 
       this.socket.on("session_state", (data: Record<string, unknown>) => {
-        this.logger.debug(`Session state update: ${JSON.stringify(data)}`);
+        this.logger.info(`Session state: scriptId=${data.scriptId ?? "(null)"}, status=${data.status}, paused=${data.paused}`);
         this.setConnectionState("active");
         const paused = typeof data.paused === "number" ? data.paused : 1;
         const speed = typeof data.playbackSpeed === "number" ? data.playbackSpeed : 150;
         this._lastState = { isPlaying: paused === 0, speed };
         this.notifyStateListeners();
+
+        // Extract script info from session_state if present
+        const ssScriptId = typeof data.scriptId === "string" ? data.scriptId : undefined;
+        const ssScriptTitle = typeof data.scriptTitle === "string" ? data.scriptTitle : undefined;
+        if (ssScriptId !== undefined || ssScriptTitle !== undefined) {
+          this._lastScriptInfo = {
+            ...this._lastScriptInfo,
+            ...(ssScriptId !== undefined ? { scriptId: ssScriptId } : {}),
+            ...(ssScriptTitle !== undefined ? { scriptTitle: ssScriptTitle } : {}),
+          };
+          this.notifyScriptInfoListeners();
+        }
       });
 
       this.socket.on("playback_state", (data: PlaybackState) => {
@@ -273,6 +301,11 @@ export class EasyPrompterConnection {
         if (typeof data.code === "string") {
           this._lastErrorCode = data.code;
         }
+      });
+
+      this.socket.on("scripts_changed", () => {
+        this.logger.info("Script list changed — notifying listeners");
+        this.notifyScriptsChangedListeners();
       });
 
       this.socket.on("timer_update", (data: Record<string, unknown>) => {
@@ -310,8 +343,13 @@ export class EasyPrompterConnection {
 
         // Extract script title if present
         const scriptTitle = typeof settings.scriptTitle === "string" ? settings.scriptTitle : undefined;
-        if (scriptTitle) {
-          this._lastScriptInfo = { scriptTitle };
+        const scriptId = typeof settings.scriptId === "string" ? settings.scriptId : undefined;
+        if (scriptTitle !== undefined || scriptId !== undefined) {
+          this._lastScriptInfo = {
+            ...this._lastScriptInfo,
+            ...(scriptTitle !== undefined ? { scriptTitle } : {}),
+            ...(scriptId !== undefined ? { scriptId } : {}),
+          };
           this.notifyScriptInfoListeners();
         }
       });
@@ -340,8 +378,13 @@ export class EasyPrompterConnection {
 
         // Extract script title if present
         const scriptTitle = typeof global.scriptTitle?.value === "string" ? global.scriptTitle.value : undefined;
-        if (scriptTitle) {
-          this._lastScriptInfo = { scriptTitle };
+        const scriptId = typeof global.scriptId?.value === "string" ? global.scriptId.value : undefined;
+        if (scriptTitle !== undefined || scriptId !== undefined) {
+          this._lastScriptInfo = {
+            ...this._lastScriptInfo,
+            ...(scriptTitle !== undefined ? { scriptTitle } : {}),
+            ...(scriptId !== undefined ? { scriptId } : {}),
+          };
           this.notifyScriptInfoListeners();
         }
       });
@@ -510,5 +553,11 @@ export class EasyPrompterConnection {
   private notifyScriptInfoListeners(): void {
     if (!this._lastScriptInfo) return;
     this.scriptInfoListeners.forEach((listener) => listener(this._lastScriptInfo!));
+  }
+
+  private notifyScriptsChangedListeners(): void {
+    for (const listener of this.scriptsChangedListeners) {
+      try { listener(); } catch (err) { this.logger.error(`scripts_changed listener error: ${err}`); }
+    }
   }
 }

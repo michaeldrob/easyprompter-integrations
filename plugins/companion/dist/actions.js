@@ -1,6 +1,5 @@
+import { MIN_SPEED, MAX_SPEED, SCRIPT_FEEDBACKS } from "./constants.js";
 const DEFAULT_SPEED_STEP = 5;
-const MIN_SPEED = 10;
-const MAX_SPEED = 500;
 export function getActionDefinitions(instance) {
     return {
         play_pause: {
@@ -303,6 +302,40 @@ export function getActionDefinitions(instance) {
                 const step = action.options.step ?? 5;
                 instance.sendAction({ type: "margin_step", delta: -step });
             },
+        },
+        load_script: {
+            name: "Load Script",
+            description: "Switch the teleprompter to a specific script. Set the button text to the script name in the style editor above.",
+            options: [
+                {
+                    type: "dropdown",
+                    label: "Script",
+                    id: "scriptId",
+                    default: "",
+                    choices: [
+                        { id: "", label: "— Select a script —" },
+                        ...instance.cachedScripts,
+                    ],
+                    tooltip: "Select a script to load.",
+                },
+            ],
+            callback: (action) => {
+                const scriptId = action.options.scriptId?.trim();
+                if (!scriptId)
+                    return;
+                instance.startScriptLoad(scriptId);
+            },
+            subscribe: (action) => {
+                const scriptId = action.options.scriptId?.trim();
+                if (scriptId) {
+                    instance.subscribedScripts.set(action.controlId, scriptId);
+                    instance.checkFeedbacks(...SCRIPT_FEEDBACKS);
+                }
+            },
+            unsubscribe: (action) => {
+                instance.subscribedScripts.delete(action.controlId);
+            },
+            optionsToMonitorForSubscribe: ["scriptId"],
         },
     };
 }

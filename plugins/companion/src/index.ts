@@ -16,6 +16,7 @@ import { getActionDefinitions } from "./actions.js";
 import { getFeedbackDefinitions } from "./feedbacks.js";
 import { getVariableDefinitions } from "./variables.js";
 import { getPresetDefinitions, getPresetSections } from "./presets.js";
+import { MIN_SPEED, MAX_SPEED, SCRIPT_FEEDBACKS } from "./constants.js";
 
 /**
  * EasyPrompter Companion module.
@@ -27,6 +28,10 @@ export class EasyPrompterModule extends InstanceBase {
   private config: EasyPrompterConfig = { serverUrl: "", apiKey: "" };
   private unsubscribers: (() => void)[] = [];
 
+  /** Cached scripts for load_script dropdown */
+  cachedScripts: { id: string; label: string }[] = [];
+
+
   // --- Public state for actions/feedbacks to read ---
 
   /** Current connection state */
@@ -37,13 +42,23 @@ export class EasyPrompterModule extends InstanceBase {
   currentSpeed = 150;
   /** Whether display is blacked out */
   isBlackout = false;
+  /** Currently loaded script ID */
+  currentScriptId = "";
+  /** Currently loaded script title (from server) */
+  currentScriptTitle = "";
+  /** Script ID currently being loaded (for loading feedback) */
+  loadingScriptId = "";
+  /** Script ID that failed to load (for failed feedback) */
+  failedScriptId = "";
+  /** Map of controlId → scriptId for buttons with load_script action */
+  subscribedScripts = new Map<string, string>();
+  private _loadingTimeout: ReturnType<typeof setTimeout> | null = null;
+  private _failedTimeout: ReturnType<typeof setTimeout> | null = null;
 
   // --- Speed debounce state ---
   private _speedDelta = 0;
   private _speedDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   private static readonly SPEED_DEBOUNCE_MS = 80;
-  private static readonly MIN_SPEED = 10;
-  private static readonly MAX_SPEED = 500;
 
   // --- Timer sync state ---
   private _displayedElapsed = "00:00";
@@ -74,7 +89,8 @@ export class EasyPrompterModule extends InstanceBase {
       is_playing: "Paused",
       font_size: "—",
       line_height: "—",
-      script_title: "Script Title",
+      script_title: "—",
+      script_id: "",
       blackout: "OFF",
       screen_margin: "—",
     });
@@ -99,6 +115,7 @@ export class EasyPrompterModule extends InstanceBase {
   }
 
   async destroy(): Promise<void> {
+    this.subscribedScripts.clear();
     this.disconnect();
   }
 
@@ -121,6 +138,59 @@ export class EasyPrompterModule extends InstanceBase {
   }
 
   /**
+   * Start loading a script — enters loading state with timeout and failed fallback.
+   */
+  startScriptLoad(scriptId: string): void {
+    // Already loaded — just refresh feedbacks to show green.
+    // Title fallback: only when ID is unresolved AND exactly one script matches
+    // (avoids false positives when two scripts share the same title).
+    const titleMatches = this.currentScriptTitle
+      ? this.cachedScripts.filter((s) => s.label === this.currentScriptTitle)
+      : [];
+    const isAlreadyLoaded =
+      scriptId === this.currentScriptId ||
+      (!this.currentScriptId && titleMatches.length === 1 && titleMatches[0].id === scriptId);
+
+    if (isAlreadyLoaded) {
+      this.log("info", `[LoadScript] Script "${scriptId}" is already loaded — returning success`);
+      this.currentScriptId = scriptId;
+      this.checkFeedbacks(...SCRIPT_FEEDBACKS);
+      return;
+    }
+
+    this.sendAction({ type: "switch_script", scriptId });
+
+    // Enter loading state
+    this.loadingScriptId = scriptId;
+    this.failedScriptId = "";
+    if (this._failedTimeout) { clearTimeout(this._failedTimeout); this._failedTimeout = null; }
+    this.checkFeedbacks("is_loading_script", "is_failed_script");
+
+    // Timeout: show failed after 8s
+    if (this._loadingTimeout) clearTimeout(this._loadingTimeout);
+    this._loadingTimeout = setTimeout(() => {
+      if (this.loadingScriptId === scriptId) {
+        this.loadingScriptId = "";
+        this.failedScriptId = scriptId;
+        this.checkFeedbacks("is_loading_script", "is_failed_script");
+
+        // Auto-clear failed after 5s
+        this._failedTimeout = setTimeout(() => {
+          this.failedScriptId = "";
+          this.checkFeedbacks("is_failed_script");
+        }, 5000);
+      }
+    }, 8000);
+  }
+
+  private clearLoadingState(): void {
+    this.loadingScriptId = "";
+    this.failedScriptId = "";
+    if (this._loadingTimeout) { clearTimeout(this._loadingTimeout); this._loadingTimeout = null; }
+    if (this._failedTimeout) { clearTimeout(this._failedTimeout); this._failedTimeout = null; }
+  }
+
+  /**
    * Queue a speed change delta. Rapid calls are batched into a single
    * `set_speed` after a short debounce window.
    */
@@ -135,8 +205,8 @@ export class EasyPrompterModule extends InstanceBase {
       this._speedDelta = 0;
       if (d === 0) return;
       const newSpeed = Math.max(
-        EasyPrompterModule.MIN_SPEED,
-        Math.min(EasyPrompterModule.MAX_SPEED, this.currentSpeed + d)
+        MIN_SPEED,
+        Math.min(MAX_SPEED, this.currentSpeed + d)
       );
       this.sendAction({ type: "set_speed", speedWpm: newSpeed });
     }, EasyPrompterModule.SPEED_DEBOUNCE_MS);
@@ -265,15 +335,119 @@ export class EasyPrompterModule extends InstanceBase {
     // Subscribe to script info changes
     this.unsubscribers.push(
       this.connection.onScriptInfoChange((data: ScriptInfo) => {
-        this.log("debug", `Script info received: ${JSON.stringify(data)}`);
+        this.log("info", `Script info received: ${JSON.stringify(data)}`);
         if (data.scriptTitle !== undefined) {
-          this.setVariableValues({ script_title: data.scriptTitle || "Script Title" });
+          this.currentScriptTitle = data.scriptTitle || "";
+          this.setVariableValues({ script_title: data.scriptTitle || "—" });
         }
+
+        // Server may only send scriptTitle without scriptId.
+        // Resolve scriptId from cachedScripts when missing.
+        let resolvedScriptId = data.scriptId ?? "";
+        if (!resolvedScriptId && data.scriptTitle) {
+          const match = this.cachedScripts.find((s) => s.label === data.scriptTitle);
+          if (match) resolvedScriptId = match.id;
+        }
+
+        // Only overwrite currentScriptId when we have a definitive value.
+        // Title-only events that arrive before cachedScripts are loaded
+        // would otherwise clear a previously resolved ID.
+        if (resolvedScriptId || data.scriptId !== undefined) {
+          this.currentScriptId = resolvedScriptId;
+          this.setVariableValues({ script_id: this.currentScriptId });
+        }
+
+        this.log("info", `[LoadScript] scriptInfo: currentScriptId="${this.currentScriptId}" loadingScriptId="${this.loadingScriptId}"`);
+
+        // Handle loading state transitions
+        if (this.loadingScriptId) {
+          if (this.currentScriptId === this.loadingScriptId) {
+            this.log("info", `[LoadScript] Script confirmed loaded — clearing loading state`);
+            this.clearLoadingState();
+          } else if (this.currentScriptId) {
+            this.log("info", `[LoadScript] Different script loaded (${this.currentScriptId}) — clearing loading`);
+            this.clearLoadingState();
+          }
+          // else: no definitive scriptId yet, keep loading
+        }
+
+        this.checkFeedbacks(...SCRIPT_FEEDBACKS);
+      })
+    );
+
+    // Re-fetch scripts when the server signals a change (create, delete, rename)
+    this.unsubscribers.push(
+      this.connection.onScriptsChanged(() => {
+        this.refreshScripts();
       })
     );
 
     // Start the connection
     this.connection.connect();
+
+    // Fetch user scripts for the load_script dropdown
+    this.refreshScripts();
+  }
+
+  /**
+   * Fetch user's recent scripts from the API and update the load_script dropdown choices.
+   */
+  private async refreshScripts(): Promise<void> {
+    if (!this.config.serverUrl || !this.config.apiKey) return;
+
+    try {
+      const url = this.config.serverUrl.replace(/\/+$/, "") + "/api/remote-keys/scripts";
+      const resp = await fetch(url, {
+        headers: { "Authorization": "Bearer " + this.config.apiKey },
+      });
+
+      if (!resp.ok) {
+        this.log("warn", `Failed to fetch scripts: HTTP ${resp.status}`);
+        return;
+      }
+
+      const data = await resp.json() as { scripts?: unknown[] };
+      const rawScripts = Array.isArray(data.scripts) ? data.scripts : [];
+      const newScripts = rawScripts
+        .filter((s): s is { id: string; title: string } =>
+          typeof s === "object" && s !== null &&
+          typeof (s as Record<string, unknown>).id === "string" &&
+          typeof (s as Record<string, unknown>).title === "string"
+        )
+        .map((s) => ({ id: s.id, label: s.title || "(Untitled)" }));
+
+      if (newScripts.length === 0 && this.cachedScripts.length === 0) {
+        this.log("warn", "[RefreshScripts] No scripts found — ensure scripts exist in your EasyPrompter account");
+      }
+
+      // Skip action/feedback redefinition if the list hasn't changed
+      const changed = JSON.stringify(newScripts) !== JSON.stringify(this.cachedScripts);
+      this.cachedScripts = newScripts;
+
+      if (changed) {
+        this.setActionDefinitions(getActionDefinitions(this) as CompanionActionDefinitions);
+        this.setFeedbackDefinitions(getFeedbackDefinitions(this) as CompanionFeedbackDefinitions);
+      }
+
+      // Re-resolve currentScriptId in case scriptInfo arrived before scripts were cached
+      if (!this.currentScriptId && this.currentScriptTitle) {
+        const match = this.cachedScripts.find((s) => s.label === this.currentScriptTitle);
+        if (match) {
+          this.currentScriptId = match.id;
+          this.setVariableValues({ script_id: this.currentScriptId });
+          this.log("info", `[RefreshScripts] Resolved currentScriptId="${match.id}" from title "${this.currentScriptTitle}"`);
+        } else {
+          this.log("info", `[RefreshScripts] Could not resolve scriptId from title "${this.currentScriptTitle}" — no match in ${this.cachedScripts.length} cached scripts`);
+        }
+      }
+      this.checkFeedbacks(...SCRIPT_FEEDBACKS);
+
+      this.log("info", `Refreshed scripts: ${this.cachedScripts.length} found, currentScriptId="${this.currentScriptId}"`);
+    } catch (err) {
+      this.log("warn", `Failed to fetch scripts: ${err}`);
+    }
+
+
   }
 
   private disconnect(): void {
@@ -294,6 +468,10 @@ export class EasyPrompterModule extends InstanceBase {
     this.isPlaying = false;
     this.isBlackout = false;
     this.currentSpeed = 150;
+    this.currentScriptId = "";
+    this.currentScriptTitle = "";
+
+
 
     // Clear timer sync
     if (this._timerSyncTimer) {
@@ -306,9 +484,24 @@ export class EasyPrompterModule extends InstanceBase {
       clearTimeout(this._speedDebounceTimer);
       this._speedDebounceTimer = null;
     }
+    this._speedDelta = 0;
+
+    // Clear loading/failed timers
+    if (this._loadingTimeout) {
+      clearTimeout(this._loadingTimeout);
+      this._loadingTimeout = null;
+    }
+    if (this._failedTimeout) {
+      clearTimeout(this._failedTimeout);
+      this._failedTimeout = null;
+    }
+
+    this.loadingScriptId = "";
+    this.failedScriptId = "";
+
 
     // Only reset connection-dependent values; keep last-known progress,
-    // timer, script title, and display settings so they persist across
+    // timer, and display settings so they persist across
     // reconnects rather than flashing to zero.
     this.setVariableValues({
       speed: "—",

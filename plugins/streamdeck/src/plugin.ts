@@ -18,6 +18,7 @@ import { MarginAction } from "./actions/margin";
 import { Blackout } from "./actions/blackout";
 import { Progress } from "./actions/progress";
 import { ScriptTitle } from "./actions/script-title";
+import { LoadScript } from "./actions/load-script";
 import { connectionManager } from "./connection-manager";
 import type { EasyPrompterSettings } from "./types";
 
@@ -42,6 +43,7 @@ streamDeck.actions.registerAction(new MarginAction());
 streamDeck.actions.registerAction(new Blackout());
 streamDeck.actions.registerAction(new Progress());
 streamDeck.actions.registerAction(new ScriptTitle());
+streamDeck.actions.registerAction(new LoadScript());
 
 // When global settings change (user enters URL + API key), establish connection
 streamDeck.settings.onDidReceiveGlobalSettings<EasyPrompterSettings>((ev) => {

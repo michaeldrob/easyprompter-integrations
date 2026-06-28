@@ -10,7 +10,8 @@ export function getVariableDefinitions(): CompanionVariableDefinitions {
     is_playing: { name: "Playing State" },
     font_size: { name: "Font Size (px)" },
     line_height: { name: "Line Height (%)" },
-    script_title: { name: "Script Title" },
+    script_title: { name: "Current Script Title" },
+    script_id: { name: "Script ID" },
     blackout: { name: "Blackout State" },
     screen_margin: { name: "Screen Margin (%)" },
   };
