@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EasyPrompter Gallery - Operate Mode</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1920px;
+    height: 960px;
+    overflow: hidden;
+    font-family: 'Inter', -apple-system, sans-serif;
+    position: relative;
+    background: #070c18;
+  }
+
+  .glow-1 {
+    position: absolute;
+    width: 800px; height: 800px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 200, 220, 0.08) 0%, transparent 70%);
+    bottom: -200px; right: -100px; z-index: 0;
+  }
+  .glow-2 {
+    position: absolute;
+    width: 600px; height: 600px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(100, 120, 255, 0.06) 0%, transparent 70%);
+    top: -150px; left: 200px; z-index: 0;
+  }
+  .glow-3 {
+    position: absolute;
+    width: 500px; height: 500px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 200, 220, 0.05) 0%, transparent 70%);
+    bottom: 100px; left: -100px; z-index: 0;
+  }
+
+  .container {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; z-index: 1;
+    padding: 40px 80px;
+    gap: 80px;
+  }
+
+  .screenshot-wrapper {
+    flex: 1; position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .screenshot-wrapper::before {
+    content: '';
+    position: absolute; inset: -2px; border-radius: 14px;
+    background: linear-gradient(135deg, rgba(0, 200, 220, 0.25), rgba(100, 120, 255, 0.12), transparent);
+    z-index: -1;
+  }
+
+  .screenshot-wrapper::after {
+    content: '';
+    position: absolute; inset: -40px; border-radius: 30px;
+    background: radial-gradient(ellipse at center, rgba(0, 200, 220, 0.06) 0%, transparent 70%);
+    z-index: -2;
+  }
+
+  .screenshot-wrapper img {
+    display: block;
+    height: 820px; width: auto;
+    border-radius: 12px;
+    box-shadow:
+      0 25px 80px rgba(0, 0, 0, 0.6),
+      0 8px 30px rgba(0, 0, 0, 0.4),
+      0 0 80px rgba(0, 200, 220, 0.04);
+  }
+
+  .info {
+    flex: 0 0 420px;
+    display: flex; flex-direction: column; justify-content: center;
+    gap: 28px;
+  }
+
+  .label {
+    font-size: 13px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 3px; color: rgba(90, 215, 225, 0.7);
+  }
+
+  .title {
+    font-size: 44px; font-weight: 700; color: #fff;
+    line-height: 1.15;
+  }
+
+  .description {
+    font-size: 18px; font-weight: 300; color: rgba(255, 255, 255, 0.5);
+    line-height: 1.65;
+  }
+
+  .features {
+    display: flex; flex-direction: column; gap: 14px;
+  }
+
+  .feature-item {
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .feature-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(90, 215, 225, 0.6); flex-shrink: 0;
+  }
+
+  .feature-text {
+    font-size: 16px; font-weight: 400;
+    color: rgba(255, 255, 255, 0.5); letter-spacing: 0.3px;
+  }
+</style>
+</head>
+<body>
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+  <div class="glow-3"></div>
+
+  <div class="container">
+    <div class="screenshot-wrapper">
+      <img src="operate mode no popup.png" alt="EasyPrompter Operate Mode">
+    </div>
+
+    <div class="info">
+      <div class="label">Operate Mode</div>
+      <div class="title">Fine-tune every detail live</div>
+      <div class="description">
+        Adjust font size, line height, margins, and display settings in real time while your teleprompter is running.
+      </div>
+      <div class="features">
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div class="feature-text">Live text settings adjustment</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div class="feature-text">Cue marker display modes</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div class="feature-text">Mirror mode for beam splitters</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div class="feature-text">Built-in elapsed timer</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

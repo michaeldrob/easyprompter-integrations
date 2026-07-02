@@ -1,6 +1,6 @@
 {
   "name": "streamdeck-plugin",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "main": "src/plugin.ts",
@@ -11,8 +11,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@elgato/streamdeck": "^2.0.0",
-    "@easyprompter/remote-client": "workspace:*"
+    "@easyprompter/remote-client": "workspace:*",
+    "@elgato/streamdeck": "^2.0.0"
   },
   "devDependencies": {
     "@elgato/cli": "^1.7.4",

@@ -47,6 +47,11 @@ export class ScrollWheel extends SingletonAction {
       ev.action.setFeedback({ icon: SCROLL_ICON, directionIcon: EMPTY_PIXMAP });
     }
 
+    // Capture initial per-action settings from the appear payload
+    if (ev.payload.settings) {
+      this.encoderSettings.set(ev.action.id, ev.payload.settings as EncoderActionSettings);
+    }
+
     const unsubs: (() => void)[] = [];
 
     unsubs.push(

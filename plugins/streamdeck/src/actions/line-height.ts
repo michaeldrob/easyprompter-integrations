@@ -40,13 +40,43 @@ export class LineHeight extends SingletonAction {
       ev.action.setFeedback({ icon: LINE_HEIGHT_ICON });
     }
 
+    // Capture initial per-action settings from the appear payload
+    if (ev.payload.settings) {
+      this.actionSettings.set(ev.action.id, ev.payload.settings as EncoderActionSettings);
+    }
+
     const unsubs: (() => void)[] = [];
     let lastLineHeight: number | null = null;
 
-    // DISABLED FOR TESTING — checking if settings feedback blocks event loop
-    // unsubs.push(
-    //   conn.onSettingsChange((data: SettingsData) => { ... })
-    // );
+    unsubs.push(
+      conn.onSettingsChange((data: SettingsData) => {
+        if (ev.action.isDial()) {
+          if (data.lineHeight != null) lastLineHeight = data.lineHeight;
+
+          let layoutChanged = false;
+          if (data.activeDisplayColor !== undefined) {
+            layoutChanged = setBarColor(ev.action, "line-height-layout", data.activeDisplayColor);
+          }
+
+          if (data.lineHeight != null || data.activeDisplayColor !== undefined) {
+            const applyFeedback = (): void => {
+              if (lastLineHeight != null) {
+                ev.action.setFeedback({
+                  icon: LINE_HEIGHT_ICON,
+                  lineHeightValue: `${lastLineHeight}%`,
+                  lineHeightBar: Math.min(100, Math.max(0, Math.round(((lastLineHeight - 100) / (300 - 100)) * 100))),
+                });
+              }
+            };
+            if (layoutChanged) {
+              setTimeout(applyFeedback, 150);
+            } else {
+              applyFeedback();
+            }
+          }
+        }
+      })
+    );
 
     unsubs.push(
       conn.onConnectionStateChange((state: ConnectionState) => {

@@ -18,7 +18,7 @@
     {
       "key": "directionIcon",
       "type": "pixmap",
-      "rect": [84, 38, 32, 32]
+      "rect": [84, 29, 32, 32]
     }
   ]
 }

@@ -327,9 +327,6 @@ export class EasyPrompterConnection {
         const settings = (data?.settings ?? data) as Record<string, unknown>;
         if (!settings || typeof settings !== "object") return;
 
-        // DEBUG — timing trace
-        this.logger.info(`[TIMING] settings_update received keys=${Object.keys(settings).join(",")} t=${Date.now()}`);
-
         const fontSize = typeof settings.fontSize === "number" ? settings.fontSize : undefined;
         const lineHeight = typeof settings.lineHeight === "number" ? settings.lineHeight : undefined;
         const blackout = typeof settings.blackout === "boolean" ? settings.blackout : undefined;

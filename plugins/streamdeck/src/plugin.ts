@@ -45,14 +45,40 @@ streamDeck.actions.registerAction(new Progress());
 streamDeck.actions.registerAction(new ScriptTitle());
 streamDeck.actions.registerAction(new LoadScript());
 
+// Track the current connection config so we can skip no-op handler calls
+// caused by our own connectionStatus writes to global settings.
+let lastConnectedUrl = "";
+let lastConnectedKey = "";
+let connectionStateUnsub: (() => void) | null = null;
+
 // When global settings change (user enters URL + API key), establish connection
 streamDeck.settings.onDidReceiveGlobalSettings<EasyPrompterSettings>((ev) => {
   const s = ev.settings;
   if (!s.serverUrl || !s.apiKey) return;
+
+  // Skip if URL+key haven't changed — this is just our own connectionStatus write
+  if (s.serverUrl === lastConnectedUrl && s.apiKey === lastConnectedKey) return;
+  lastConnectedUrl = s.serverUrl;
+  lastConnectedKey = s.apiKey;
+
   // Disconnect stale connections before creating/reusing the new one
   connectionManager.disconnectAllExcept(s.serverUrl, s.apiKey);
   const conn = connectionManager.getConnection(s.serverUrl, s.apiKey);
   conn.connect();
+
+  // Clean up previous listener
+  if (connectionStateUnsub) {
+    connectionStateUnsub();
+    connectionStateUnsub = null;
+  }
+
+  // Broadcast connection state changes to global settings so PIs can display it
+  connectionStateUnsub = conn.onConnectionStateChange(async (state) => {
+    const current = await streamDeck.settings.getGlobalSettings<EasyPrompterSettings>();
+    if (current.connectionStatus !== state) {
+      await streamDeck.settings.setGlobalSettings({ ...current, connectionStatus: state });
+    }
+  });
 });
 
 // Connect to Stream Deck

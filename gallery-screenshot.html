@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EasyPrompter Gallery - App Screenshot</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1920px;
+    height: 960px;
+    overflow: hidden;
+    font-family: 'Inter', -apple-system, sans-serif;
+    position: relative;
+    background: #070c18;
+  }
+
+  /* Ambient glow effects */
+  .glow-1 {
+    position: absolute;
+    width: 800px;
+    height: 800px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 200, 220, 0.08) 0%, transparent 70%);
+    top: -200px;
+    left: -100px;
+    z-index: 0;
+  }
+  .glow-2 {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(100, 120, 255, 0.06) 0%, transparent 70%);
+    bottom: -150px;
+    right: -50px;
+    z-index: 0;
+  }
+  .glow-3 {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 200, 220, 0.05) 0%, transparent 70%);
+    bottom: -100px;
+    left: 400px;
+    z-index: 0;
+  }
+
+  .container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    padding: 40px 80px;
+    gap: 80px;
+  }
+
+  .screenshot-wrapper {
+    flex: 0 0 auto;
+    position: relative;
+  }
+
+  .screenshot-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(0, 200, 220, 0.3), rgba(100, 120, 255, 0.15), rgba(0, 200, 220, 0.1));
+    z-index: -1;
+  }
+
+  .screenshot-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: -40px;
+    border-radius: 30px;
+    background: radial-gradient(ellipse at center, rgba(0, 200, 220, 0.08) 0%, transparent 70%);
+    z-index: -2;
+  }
+
+  .screenshot-wrapper img {
+    display: block;
+    height: 820px;
+    width: auto;
+    border-radius: 12px;
+    box-shadow:
+      0 25px 80px rgba(0, 0, 0, 0.6),
+      0 8px 30px rgba(0, 0, 0, 0.4),
+      0 0 100px rgba(0, 200, 220, 0.05);
+  }
+
+  .info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 30px;
+    max-width: 500px;
+  }
+
+  .textmark {
+    width: 360px;
+    height: auto;
+    filter: drop-shadow(0 2px 20px rgba(0, 200, 220, 0.12));
+  }
+
+  .tagline {
+    font-size: 32px;
+    font-weight: 300;
+    color: rgba(90, 215, 225, 0.9);
+    line-height: 1.3;
+  }
+
+  .features {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .feature-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(90, 215, 225, 0.6);
+    flex-shrink: 0;
+  }
+
+  .feature-text {
+    font-size: 18px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.3px;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  .badge {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(90, 215, 225, 0.8);
+    background: rgba(90, 215, 225, 0.08);
+    border: 1px solid rgba(90, 215, 225, 0.2);
+    padding: 8px 18px;
+    border-radius: 100px;
+  }
+</style>
+</head>
+<body>
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+  <div class="glow-3"></div>
+
+  <div class="container">
+    <div class="screenshot-wrapper">
+      <!-- DROP YOUR SCREENSHOT HERE: Save the Stream Deck screenshot as "screenshot.png" in the same folder -->
+      <img src="screenshot.png" alt="EasyPrompter Stream Deck Plugin">
+    </div>
+
+    <div class="info">
+      <img class="textmark" src="assets/textmark.png" alt="EasyPrompter">
+      <div class="tagline">Full teleprompter control from your Stream Deck</div>
+      <div class="features">
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div class="feature-text">19 actions — buttons, dials & live displays</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div class="feature-text">Stream Deck+ encoder support</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div class="feature-text">Real-time state sync & feedback</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div class="feature-text">One-click integration key setup</div>
+        </div>
+      </div>
+      <div class="badge-row">
+        <div class="badge">Stream Deck+</div>
+        <div class="badge">Stream Deck</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

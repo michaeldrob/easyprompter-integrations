@@ -41,6 +41,11 @@ export class SpeedDial extends SingletonAction {
       ev.action.setFeedback({ icon: SPEED_ICON });
     }
 
+    // Capture initial per-action settings from the appear payload
+    if (ev.payload.settings) {
+      this.actionSettings.set(ev.action.id, ev.payload.settings as EncoderActionSettings);
+    }
+
     const unsubs: (() => void)[] = [];
 
     unsubs.push(

@@ -16,13 +16,9 @@
       "value": "Shuttle"
     },
     {
-      "key": "shuttleValue",
-      "type": "text",
-      "rect": [0, 28, 200, 64],
-      "font": { "size": 32, "weight": 400 },
-      "color": "#FFFFFF",
-      "alignment": "center",
-      "value": "\u25ae\u25ae"
+      "key": "shuttleIcon",
+      "type": "pixmap",
+      "rect": [50, 28, 100, 30]
     }
   ]
 }

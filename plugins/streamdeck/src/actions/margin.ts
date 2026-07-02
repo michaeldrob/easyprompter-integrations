@@ -13,11 +13,39 @@ import streamDeck from "@elgato/streamdeck";
 
 import { connectionManager } from "../connection-manager";
 import { MARGIN_ICON } from "../icons/encoder-icons";
-import { setBarColor } from "../layout-color";
 import type { ConnectionState, EasyPrompterSettings, SettingsData } from "../types";
 
 
 const MARGIN_STEP = 5;
+/** Max margin percentage treated as "full" for the visual bar. */
+const MAX_MARGIN = 90;
+
+/**
+ * Generates an SVG data URI showing margin as two bars closing in from
+ * both edges toward center. At MAX_MARGIN the bars nearly meet.
+ *
+ * Visual: ████░░░░░░░░░░████  (low margin)
+ *         ██████████████████  (high margin, small gap)
+ *
+ * Matches the 168×10 pixmap rect in the layout.
+ */
+function marginBarSvg(margin: number, fillColor: string): string {
+  const W = 168;
+  const H = 10;
+  const R = 4; // corner radius matching the rounded bar style
+  const fraction = Math.min(1, Math.max(0, margin / MAX_MARGIN));
+  // Each side fills half the bar width proportionally
+  const fillW = Math.round((fraction * W) / 2);
+
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}">
+    <rect x="0" y="0" width="${W}" height="${H}" rx="${R}" fill="#1a1a1a" stroke="#333333" stroke-width="1"/>
+    ${fillW > 0 ? `<rect x="1" y="1" width="${fillW}" height="${H - 2}" rx="${Math.min(R, fillW)}" fill="${fillColor}"/>` : ""}
+    ${fillW > 0 ? `<rect x="${W - 1 - fillW}" y="1" width="${fillW}" height="${H - 2}" rx="${Math.min(R, fillW)}" fill="${fillColor}"/>` : ""}
+  </svg>`
+  )}`
+;
+}
 
 /**
  * Margin action (Stream Deck+ encoder) — rotate to adjust screen margin,
@@ -40,13 +68,33 @@ export class MarginAction extends SingletonAction {
       ev.action.setFeedback({ icon: MARGIN_ICON });
     }
 
+    // Capture initial per-action settings from the appear payload
+    if (ev.payload.settings) {
+      this.actionSettings.set(ev.action.id, ev.payload.settings as EncoderActionSettings);
+    }
+
     const unsubs: (() => void)[] = [];
     let lastMargin: number | null = null;
+    let barFillColor = "#00E5FF";
 
-    // DISABLED FOR TESTING — checking if settings feedback blocks event loop
-    // unsubs.push(
-    //   conn.onSettingsChange((data: SettingsData) => { ... })
-    // );
+    unsubs.push(
+      conn.onSettingsChange((data: SettingsData) => {
+        if (ev.action.isDial()) {
+          if (data.screenMargin != null) lastMargin = data.screenMargin;
+          if (data.activeDisplayColor) barFillColor = data.activeDisplayColor;
+
+          if (data.screenMargin != null || data.activeDisplayColor !== undefined) {
+            if (lastMargin != null) {
+              ev.action.setFeedback({
+                icon: MARGIN_ICON,
+                marginValue: `${lastMargin}%`,
+                marginBar: marginBarSvg(lastMargin, barFillColor),
+              });
+            }
+          }
+        }
+      })
+    );
 
     unsubs.push(
       conn.onConnectionStateChange((state: ConnectionState) => {

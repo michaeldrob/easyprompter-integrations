@@ -40,37 +40,41 @@ export class FontSize extends SingletonAction {
       ev.action.setFeedback({ icon: FONT_ICON });
     }
 
+    // Capture initial per-action settings from the appear payload
+    if (ev.payload.settings) {
+      this.actionSettings.set(ev.action.id, ev.payload.settings as EncoderActionSettings);
+    }
+
     const unsubs: (() => void)[] = [];
     let lastFontSize: number | null = null;
 
-    // DISABLED FOR TESTING — checking if settings feedback loop causes dial delay
-    // unsubs.push(
-    //   conn.onSettingsChange((data: SettingsData) => {
-    //     if (ev.action.isDial()) {
-    //       if (data.fontSize != null) lastFontSize = data.fontSize;
-    //       let layoutChanged = false;
-    //       if (data.activeDisplayColor !== undefined) {
-    //         layoutChanged = setBarColor(ev.action, "font-layout", data.activeDisplayColor);
-    //       }
-    //       if (data.fontSize != null || data.activeDisplayColor !== undefined) {
-    //         const applyFeedback = (): void => {
-    //           if (lastFontSize != null) {
-    //             ev.action.setFeedback({
-    //               icon: FONT_ICON,
-    //               fontValue: `${lastFontSize}px`,
-    //               fontBar: Math.min(100, Math.max(0, Math.round(((lastFontSize - 14) / (180 - 14)) * 100))),
-    //             });
-    //           }
-    //         };
-    //         if (layoutChanged) {
-    //           setTimeout(applyFeedback, 150);
-    //         } else {
-    //           applyFeedback();
-    //         }
-    //       }
-    //     }
-    //   })
-    // );
+    unsubs.push(
+      conn.onSettingsChange((data: SettingsData) => {
+        if (ev.action.isDial()) {
+          if (data.fontSize != null) lastFontSize = data.fontSize;
+          let layoutChanged = false;
+          if (data.activeDisplayColor !== undefined) {
+            layoutChanged = setBarColor(ev.action, "font-layout", data.activeDisplayColor);
+          }
+          if (data.fontSize != null || data.activeDisplayColor !== undefined) {
+            const applyFeedback = (): void => {
+              if (lastFontSize != null) {
+                ev.action.setFeedback({
+                  icon: FONT_ICON,
+                  fontValue: `${lastFontSize}px`,
+                  fontBar: Math.min(100, Math.max(0, Math.round(((lastFontSize - 14) / (180 - 14)) * 100))),
+                });
+              }
+            };
+            if (layoutChanged) {
+              setTimeout(applyFeedback, 150);
+            } else {
+              applyFeedback();
+            }
+          }
+        }
+      })
+    );
 
     unsubs.push(
       conn.onConnectionStateChange((state: ConnectionState) => {
@@ -109,10 +113,6 @@ export class FontSize extends SingletonAction {
     const ticks = ev.payload.ticks;
     const stepSize = parseInt(String(this.actionSettings.get(ev.action.id)?.stepSize), 10) || 1;
     const delta = ticks * FONT_SIZE_STEP * stepSize;
-
-    // DEBUG — timing trace (plugin-side)
-    const pluginTs = Date.now();
-    streamDeck.logger.info(`[TIMING] plugin: dial rotate delta=${delta} t=${pluginTs}`);
     conn.sendRemoteControl({ type: "font_size_step", delta });
   }
 

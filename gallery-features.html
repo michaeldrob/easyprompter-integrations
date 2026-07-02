@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EasyPrompter Gallery - Features</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1920px;
+    height: 960px;
+    overflow: hidden;
+    font-family: 'Inter', -apple-system, sans-serif;
+    position: relative;
+    background: #070c18;
+  }
+
+  .bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.3;
+  }
+
+  .container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    padding: 60px 80px;
+    gap: 60px;
+  }
+
+  .feature {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 24px;
+  }
+
+  .feature-icon {
+    width: 100px;
+    height: 100px;
+    background: rgba(90, 215, 225, 0.1);
+    border: 2px solid rgba(90, 215, 225, 0.3);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .feature-icon svg {
+    width: 48px;
+    height: 48px;
+  }
+
+  .feature-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.3px;
+  }
+
+  .feature-desc {
+    font-size: 20px;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.6;
+    max-width: 380px;
+  }
+
+  .feature-tag {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(90, 215, 225, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: rgba(90, 215, 225, 0.08);
+    padding: 8px 20px;
+    border-radius: 100px;
+    border: 1px solid rgba(90, 215, 225, 0.2);
+  }
+
+  .divider {
+    width: 1px;
+    height: 400px;
+    background: linear-gradient(transparent, rgba(255,255,255,0.1), transparent);
+  }
+</style>
+</head>
+<body>
+  <div class="bg">
+    <img src="assets/bg-streaks.jpg" alt="">
+  </div>
+
+  <div class="container">
+    <!-- Feature 1: Dial Support -->
+    <div class="feature">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(90, 215, 225, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
+      </div>
+      <div class="feature-title">Dial Support</div>
+      <div class="feature-desc">Speed, font size, line height, margin, shuttle, and scroll — all controllable with Stream Deck+ encoders</div>
+      <div class="feature-tag">Stream Deck+</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Feature 2: Live Feedback -->
+    <div class="feature">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(90, 215, 225, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.4"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>
+      </div>
+      <div class="feature-title">Live Feedback</div>
+      <div class="feature-desc">Keys and dials update in real-time — see current speed, progress, timer, and play state at a glance</div>
+      <div class="feature-tag">Real-time Sync</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Feature 3: Easy Setup -->
+    <div class="feature">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(90, 215, 225, 0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+      </div>
+      <div class="feature-title">One-Click Setup</div>
+      <div class="feature-desc">Paste your integration key, and all actions instantly connect to your EasyPrompter teleprompter session</div>
+      <div class="feature-tag">Plug &amp; Play</div>
+    </div>
+  </div>
+</body>
+</html>
