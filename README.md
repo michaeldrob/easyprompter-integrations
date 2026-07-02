@@ -58,10 +58,10 @@ Full-featured module for the [Bitfocus Companion](https://bitfocus.io/companion)
 
 ### Connecting to EasyPrompter
 
-Both plugins require a **Server URL** and **API Key** to connect:
+Both plugins require a **Server URL** and **Integration Key** to connect:
 
-1. Open EasyPrompter → **Settings** → **Remote Control**
-2. Copy the **Server URL** and **API Key**
+1. Open EasyPrompter → **Settings** → **Integrations**
+2. Copy the **Server URL** and **Integration Key**
 3. Enter them in the plugin's connection settings
 
 ### Installation & Build

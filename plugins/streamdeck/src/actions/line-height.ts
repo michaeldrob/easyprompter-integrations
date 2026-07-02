@@ -13,6 +13,7 @@ import streamDeck from "@elgato/streamdeck";
 
 import { connectionManager } from "../connection-manager";
 import { LINE_HEIGHT_ICON } from "../icons/encoder-icons";
+import { setBarColor } from "../layout-color";
 import type { ConnectionState, EasyPrompterSettings, SettingsData } from "../types";
 
 
@@ -40,17 +41,12 @@ export class LineHeight extends SingletonAction {
     }
 
     const unsubs: (() => void)[] = [];
+    let lastLineHeight: number | null = null;
 
-    unsubs.push(
-      conn.onSettingsChange((data: SettingsData) => {
-        if (ev.action.isDial() && data.lineHeight != null) {
-          ev.action.setFeedback({
-            lineHeightValue: `${data.lineHeight}%`,
-            lineHeightBar: Math.min(100, Math.max(0, Math.round(((data.lineHeight - 100) / (300 - 100)) * 100))),
-          });
-        }
-      })
-    );
+    // DISABLED FOR TESTING — checking if settings feedback blocks event loop
+    // unsubs.push(
+    //   conn.onSettingsChange((data: SettingsData) => { ... })
+    // );
 
     unsubs.push(
       conn.onConnectionStateChange((state: ConnectionState) => {

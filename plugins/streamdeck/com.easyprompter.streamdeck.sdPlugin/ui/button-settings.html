@@ -71,13 +71,13 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label" for="apiKey">API Key</label>
+        <label class="field-label" for="apiKey">Integration Key</label>
         <div class="field-value">
           <input id="apiKey" type="password" placeholder="ep_rk_..." required />
         </div>
       </div>
       <div class="help-link">
-        <a id="settingsLink" href="#" target="_blank">Get your API key in Settings → Remote Control</a>
+        <a id="settingsLink" href="#" target="_blank">Get your integration key in Settings → Integrations</a>
       </div>
     </div>
 
@@ -143,7 +143,7 @@
           }
         };
 
-        // Global settings: server URL + API key
+        // Global settings: server URL + integration key
         serverUrlInput.addEventListener("change", function () {
           globalSettings.serverUrl = this.value.trim() || DEFAULT_URL;
           updateSettingsLink();
@@ -217,8 +217,19 @@
         if (!globalSettings.serverUrl || !globalSettings.apiKey) {
           text.textContent = "Not configured";
         } else {
-          dot.classList.add("waiting");
-          text.textContent = "Configured — plugin will connect";
+          const status = globalSettings.connectionStatus || "disconnected";
+          if (status === "active") {
+            dot.classList.add("active");
+            text.textContent = "Connected";
+          } else if (status === "waiting") {
+            dot.classList.add("active");
+            text.textContent = "Connected — waiting for session";
+          } else if (status === "error") {
+            text.textContent = "Connection error";
+          } else {
+            dot.classList.add("waiting");
+            text.textContent = "Connecting…";
+          }
         }
       }
     </script>

@@ -165,11 +165,11 @@
         <input id="serverUrl" type="url" placeholder="https://app.easyprompter.com" />
       </div>
       <div class="field">
-        <label>API Key</label>
+        <label>Integration Key</label>
         <input id="apiKey" type="password" placeholder="ep_rk_..." />
       </div>
       <div class="help-text">
-        Find your API key in EasyPrompter under<br/>Settings → Stream Deck / Remote Control.
+        Find your integration key in EasyPrompter under<br/>Settings → Integrations.
       </div>
     </div>
     <div class="branding">
@@ -231,7 +231,7 @@
         document.getElementById("serverUrl").addEventListener("change", saveGlobalSettings);
         document.getElementById("apiKey").addEventListener("change", function () {
           saveGlobalSettings();
-          // Re-fetch scripts when API key changes
+          // Re-fetch scripts when integration key changes
           setTimeout(fetchScripts, 300);
         });
 
@@ -294,10 +294,22 @@
         dot.className = "status-dot";
         if (!globalSettings.serverUrl || !globalSettings.apiKey) {
           dot.classList.add("disconnected");
-          text.textContent = "Enter server URL and API key";
+          text.textContent = "Enter server URL and integration key";
         } else {
-          dot.classList.add("connected");
-          text.textContent = "Configured ✓";
+          const status = globalSettings.connectionStatus || "disconnected";
+          if (status === "active") {
+            dot.classList.add("connected");
+            text.textContent = "Connected";
+          } else if (status === "waiting") {
+            dot.classList.add("connected");
+            text.textContent = "Connected — waiting for session";
+          } else if (status === "error") {
+            dot.classList.add("disconnected");
+            text.textContent = "Connection error";
+          } else {
+            dot.classList.add("disconnected");
+            text.textContent = "Connecting…";
+          }
         }
       }
 

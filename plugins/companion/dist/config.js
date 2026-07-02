@@ -10,7 +10,7 @@ export function getConfigFields() {
         {
             type: "textinput",
             id: "apiKey",
-            label: "API Key",
+            label: "Integration Key",
             width: 12,
         },
     ];

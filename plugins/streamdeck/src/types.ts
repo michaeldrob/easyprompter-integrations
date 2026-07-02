@@ -16,8 +16,10 @@ export type {
 export type EasyPrompterSettings = {
   /** The base URL of the EasyPrompter instance (e.g. https://easyprompter.com) */
   serverUrl: string;
-  /** API key for persistent authentication (e.g. ep_rk_...) */
+  /** Integration key for persistent authentication (e.g. ep_rk_...) */
   apiKey: string;
+  /** Live connection state — written by the plugin, read by Property Inspectors */
+  connectionStatus?: "disconnected" | "waiting" | "active" | "error";
 };
 
 /**

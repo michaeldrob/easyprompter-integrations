@@ -13,6 +13,7 @@ import streamDeck from "@elgato/streamdeck";
 
 import { connectionManager } from "../connection-manager";
 import { MARGIN_ICON } from "../icons/encoder-icons";
+import { setBarColor } from "../layout-color";
 import type { ConnectionState, EasyPrompterSettings, SettingsData } from "../types";
 
 
@@ -40,17 +41,12 @@ export class MarginAction extends SingletonAction {
     }
 
     const unsubs: (() => void)[] = [];
+    let lastMargin: number | null = null;
 
-    unsubs.push(
-      conn.onSettingsChange((data: SettingsData) => {
-        if (ev.action.isDial() && data.screenMargin != null) {
-          ev.action.setFeedback({
-            marginValue: `${data.screenMargin}%`,
-            marginBar: Math.min(100, Math.max(0, Math.round((data.screenMargin / 90) * 100))),
-          });
-        }
-      })
-    );
+    // DISABLED FOR TESTING — checking if settings feedback blocks event loop
+    // unsubs.push(
+    //   conn.onSettingsChange((data: SettingsData) => { ... })
+    // );
 
     unsubs.push(
       conn.onConnectionStateChange((state: ConnectionState) => {
