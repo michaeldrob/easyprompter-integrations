@@ -199,6 +199,9 @@ export class EasyPrompterConnection {
         // Disable socket.io's built-in reconnection — we manage reconnects
         // ourselves to guarantee exactly ONE connection at a time.
         reconnection: false,
+        // Force a fresh Manager per connect() call so the old Manager's
+        // internal state can't spawn ghost connections after close().
+        forceNew: true,
         // Accept self-signed / mkcert development certificates.
         // The Stream Deck plugin's bundled Node.js doesn't use the system
         // trust store, so local dev certs fail without this.

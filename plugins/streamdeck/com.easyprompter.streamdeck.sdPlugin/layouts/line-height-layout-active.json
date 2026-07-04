@@ -58,8 +58,7 @@
       "subtype": 4,
       "bar_fill_c": "#00E5FF",
       "bar_bg_c": "#1a1a1a",
-      "border_w": 1,
-      "bar_border_c": "#333333"
+      "border_w": 0
     }
   ]
 }

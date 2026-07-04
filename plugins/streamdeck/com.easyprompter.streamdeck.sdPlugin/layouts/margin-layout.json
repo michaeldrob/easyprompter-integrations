@@ -27,7 +27,7 @@
     {
       "key": "marginBar",
       "type": "pixmap",
-      "rect": [16, 78, 168, 10]
+      "rect": [16, 80, 168, 6]
     }
   ]
 }

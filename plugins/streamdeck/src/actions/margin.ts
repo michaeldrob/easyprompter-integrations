@@ -31,19 +31,19 @@ const MAX_MARGIN = 90;
  */
 function marginBarSvg(margin: number, fillColor: string): string {
   const W = 168;
-  const H = 10;
-  const R = 4; // corner radius matching the rounded bar style
+  const H = 6;
+  const R = 3; // corner radius matching the rounded bar style
   const fraction = Math.min(1, Math.max(0, margin / MAX_MARGIN));
   // Each side fills half the bar width proportionally
   const fillW = Math.round((fraction * W) / 2);
 
+  // Background matches the native SDK bar: 1px #333 border with #1a1a1a fill
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}">
-    <rect x="0" y="0" width="${W}" height="${H}" rx="${R}" fill="#1a1a1a" stroke="#333333" stroke-width="1"/>
+    <rect x="0.5" y="0.5" width="${W - 1}" height="${H - 1}" rx="${R}" fill="#1a1a1a" stroke="#333333" stroke-width="1"/>
     ${fillW > 0 ? `<rect x="1" y="1" width="${fillW}" height="${H - 2}" rx="${Math.min(R, fillW)}" fill="${fillColor}"/>` : ""}
     ${fillW > 0 ? `<rect x="${W - 1 - fillW}" y="1" width="${fillW}" height="${H - 2}" rx="${Math.min(R, fillW)}" fill="${fillColor}"/>` : ""}
-  </svg>`
-  )}`
+  </svg>`)}`
 ;
 }
 
