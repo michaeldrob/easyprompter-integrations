@@ -75,8 +75,9 @@ streamDeck.settings.onDidReceiveGlobalSettings<EasyPrompterSettings>((ev) => {
   // Broadcast connection state changes to global settings so PIs can display it
   connectionStateUnsub = conn.onConnectionStateChange(async (state) => {
     const current = await streamDeck.settings.getGlobalSettings<EasyPrompterSettings>();
-    if (current.connectionStatus !== state) {
-      await streamDeck.settings.setGlobalSettings({ ...current, connectionStatus: state });
+    const err = state === "error" ? conn.lastErrorCode : null;
+    if (current.connectionStatus !== state || current.connectionError !== err) {
+      await streamDeck.settings.setGlobalSettings({ ...current, connectionStatus: state, connectionError: err });
     }
   });
 });

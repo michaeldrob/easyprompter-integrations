@@ -20,6 +20,8 @@ export type EasyPrompterSettings = {
   apiKey: string;
   /** Live connection state — written by the plugin, read by Property Inspectors */
   connectionStatus?: "disconnected" | "waiting" | "active" | "error";
+  /** If the connection failed, this contains the error code (e.g., CONNECTION_LIMIT_REACHED) */
+  connectionError?: string | null;
 };
 
 /**

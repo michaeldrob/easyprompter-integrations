@@ -184,7 +184,7 @@
             text.textContent = "Connected — waiting for session";
           } else if (status === "error") {
             dot.classList.add("disconnected");
-            text.textContent = "Connection error";
+            text.textContent = globalSettings.connectionError ? "Error: " + globalSettings.connectionError : "Connection error";
           } else {
             dot.classList.add("disconnected");
             text.textContent = "Connecting…";

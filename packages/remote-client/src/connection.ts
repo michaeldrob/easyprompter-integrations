@@ -19,7 +19,7 @@ const defaultLogger: Logger = {
 };
 
 /** Error codes that indicate the remote key is permanently invalid — do not reconnect. */
-const PERMANENT_ERROR_CODES = ["INVALID_REMOTE_KEY", "REMOTE_KEY_REVOKED", "REMOTE_KEY_PLAN_INSUFFICIENT"];
+const PERMANENT_ERROR_CODES = ["INVALID_REMOTE_KEY", "REMOTE_KEY_REVOKED", "REMOTE_KEY_PLAN_INSUFFICIENT", "CONNECTION_LIMIT_REACHED"];
 
 type StateListener = (state: PrompterState) => void;
 type ConnectionStateListener = (state: ConnectionState) => void;
@@ -92,6 +92,10 @@ export class EasyPrompterConnection {
 
   get connectionState(): ConnectionState {
     return this._connectionState;
+  }
+
+  get lastErrorCode(): string | null {
+    return this._lastErrorCode;
   }
 
   get lastState(): PrompterState | null {
@@ -213,7 +217,6 @@ export class EasyPrompterConnection {
 
       this.socket.on("connect", () => {
         this.logger.info(`Connected to EasyPrompter at ${this.serverUrl}`);
-        this._reconnectAttempts = 0; // Reset backoff on successful connect
         // State will transition to "waiting" or "active" via server events
       });
 
@@ -254,16 +257,19 @@ export class EasyPrompterConnection {
       // Server events for session lifecycle
       this.socket.on("waiting_for_session", () => {
         this.logger.info("Waiting for teleprompter session...");
+        this._reconnectAttempts = 0; // Successful app-level auth
         this.setConnectionState("waiting");
       });
 
       this.socket.on("session_joined", (data: Record<string, unknown>) => {
         this.logger.info(`Joined session: ${JSON.stringify(data)}`);
+        this._reconnectAttempts = 0; // Successful app-level auth
         this.setConnectionState("active");
       });
 
       this.socket.on("session_state", (data: Record<string, unknown>) => {
         this.logger.info(`Session state: scriptId=${data.scriptId ?? "(null)"}, status=${data.status}, paused=${data.paused}`);
+        this._reconnectAttempts = 0; // Successful app-level auth
         this.setConnectionState("active");
         const paused = typeof data.paused === "number" ? data.paused : 1;
         const speed = typeof data.playbackSpeed === "number" ? data.playbackSpeed : 150;
