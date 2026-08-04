@@ -1,26 +1,61 @@
 {
-  "name": "companion-module-easyprompter",
-  "version": "1.1.1",
-  "private": true,
-  "type": "module",
-  "main": "dist/index.js",
-  "scripts": {
-    "build": "rimraf dist && tsc -p tsconfig.build.json",
-    "dev": "tsc -p tsconfig.build.json -w",
-    "package": "pnpm build && companion-module-build",
-    "check": "companion-module-check",
-    "typecheck": "tsc -p tsconfig.build.json --noEmit"
-  },
-  "dependencies": {
-    "@companion-module/base": "^2.0.0",
-    "@easyprompter/remote-client": "workspace:*"
-  },
-  "devDependencies": {
-    "@companion-module/tools": "^2.0.0",
-    "@types/node": "^22.0.0",
-    "lucide-static": "^1.21.0",
-    "rimraf": "^6.0.0",
-    "sharp": "^0.35.2",
-    "typescript": "^5.7.0"
-  }
+	"name": "companion-module-easyprompter",
+	"version": "1.2.0",
+	"private": true,
+	"type": "module",
+	"main": "dist/index.js",
+	"license": "MIT",
+	"homepage": "https://github.com/michaeldrob/easyprompter-integrations",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/michaeldrob/easyprompter-integrations.git"
+	},
+	"bugs": {
+		"url": "https://github.com/michaeldrob/easyprompter-integrations/issues"
+	},
+	"author": "Michael Drob",
+	"keywords": [
+		"teleprompter",
+		"prompter",
+		"scroll",
+		"broadcast",
+		"companion-module",
+		"bitfocus"
+	],
+	"prettier": "@companion-module/tools/.prettierrc.json",
+	"lint-staged": {
+		"*.{ts,tsx,js,jsx,mjs}": [
+			"prettier --write",
+			"eslint --fix"
+		]
+	},
+	"scripts": {
+		"postinstall": "husky || true",
+		"format": "prettier -w .",
+		"build": "rimraf dist && tsc -p tsconfig.build.json",
+		"build:main": "tsc -p tsconfig.build.json",
+		"dev": "tsc -p tsconfig.build.json -w",
+		"package": "pnpm build && companion-module-build",
+		"check": "companion-module-check",
+		"typecheck": "tsc -p tsconfig.build.json --noEmit",
+		"lint:raw": "eslint",
+		"lint": "pnpm lint:raw ."
+	},
+	"dependencies": {
+		"@companion-module/base": "^2.0.0",
+		"@easyprompter/remote-client": "workspace:*"
+	},
+	"devDependencies": {
+		"@companion-module/tools": "^3.0.0",
+		"@types/node": "^22.0.0",
+		"eslint": "^9.0.0",
+		"husky": "^9.0.0",
+		"lint-staged": "^15.0.0",
+		"lucide-static": "^1.21.0",
+		"prettier": "^3.0.0",
+		"rimraf": "^6.0.0",
+		"sharp": "^0.35.2",
+		"typescript": "^5.7.0",
+		"typescript-eslint": "^8.0.0"
+	}
 }

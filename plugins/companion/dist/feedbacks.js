@@ -1,12 +1,12 @@
-import { combineRgb } from "@companion-module/base";
-import { ICONS } from "./icons.js";
-import { FEEDBACK } from "./constants.js";
+import { combineRgb } from '@companion-module/base';
+import { ICONS } from './icons.js';
+import { FEEDBACK } from './constants.js';
 export function getFeedbackDefinitions(instance) {
     return {
         [FEEDBACK.IS_PLAYING]: {
-            type: "boolean",
-            name: "Prompter is Playing",
-            description: "Changes button style when the teleprompter is playing",
+            type: 'boolean',
+            name: 'Prompter is Playing',
+            description: 'Changes button style when the teleprompter is playing',
             defaultStyle: {
                 bgcolor: combineRgb(0, 204, 0),
                 color: combineRgb(0, 0, 0),
@@ -17,35 +17,35 @@ export function getFeedbackDefinitions(instance) {
             },
         },
         [FEEDBACK.IS_CONNECTED]: {
-            type: "boolean",
-            name: "Connected to Server",
-            description: "Changes button style when connected and session is active",
+            type: 'boolean',
+            name: 'Connected to Server',
+            description: 'Changes button style when connected and session is active',
             defaultStyle: {
                 bgcolor: combineRgb(0, 100, 200),
                 color: combineRgb(255, 255, 255),
             },
             options: [],
             callback: () => {
-                return instance.connectionState === "active";
+                return instance.connectionState === 'active';
             },
         },
         [FEEDBACK.IS_WAITING]: {
-            type: "boolean",
-            name: "Waiting for Session",
-            description: "Changes button style when connected but no session is active",
+            type: 'boolean',
+            name: 'Waiting for Session',
+            description: 'Changes button style when connected but no session is active',
             defaultStyle: {
                 bgcolor: combineRgb(200, 200, 0),
                 color: combineRgb(0, 0, 0),
             },
             options: [],
             callback: () => {
-                return instance.connectionState === "waiting";
+                return instance.connectionState === 'waiting';
             },
         },
         [FEEDBACK.IS_BLACKOUT]: {
-            type: "boolean",
-            name: "Blackout Active",
-            description: "Changes button style when the display is blacked out",
+            type: 'boolean',
+            name: 'Blackout Active',
+            description: 'Changes button style when the display is blacked out',
             defaultStyle: {
                 bgcolor: combineRgb(204, 0, 0),
                 color: combineRgb(255, 255, 255),
@@ -56,12 +56,12 @@ export function getFeedbackDefinitions(instance) {
             },
         },
         [FEEDBACK.IS_ACTIVE_SCRIPT]: {
-            type: "boolean",
-            name: "Script is Active",
+            type: 'boolean',
+            name: 'Script is Active',
             description: "Shows green bar when this button's configured script is the currently loaded one",
             defaultStyle: {
                 png64: ICONS.bar_green,
-                pngalignment: "center:top",
+                pngalignment: 'center:top',
             },
             options: [],
             callback: (feedback) => {
@@ -70,13 +70,13 @@ export function getFeedbackDefinitions(instance) {
             },
         },
         [FEEDBACK.IS_LOADING_SCRIPT]: {
-            type: "boolean",
-            name: "Script is Loading",
+            type: 'boolean',
+            name: 'Script is Loading',
             description: "Shows orange bar while this button's configured script is being loaded",
             defaultStyle: {
                 png64: ICONS.bar_orange,
-                pngalignment: "center:top",
-                text: "⏳",
+                pngalignment: 'center:top',
+                text: '⏳',
             },
             options: [],
             callback: (feedback) => {
@@ -85,13 +85,13 @@ export function getFeedbackDefinitions(instance) {
             },
         },
         [FEEDBACK.IS_FAILED_SCRIPT]: {
-            type: "boolean",
-            name: "Script Load Failed",
+            type: 'boolean',
+            name: 'Script Load Failed',
             description: "Shows red bar when this button's configured script fails to load (timeout)",
             defaultStyle: {
                 png64: ICONS.bar_red,
-                pngalignment: "center:top",
-                text: "✕",
+                pngalignment: 'center:top',
+                text: '✕',
             },
             options: [],
             callback: (feedback) => {

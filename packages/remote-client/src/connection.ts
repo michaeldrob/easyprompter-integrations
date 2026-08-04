@@ -206,10 +206,6 @@ export class EasyPrompterConnection {
         // Force a fresh Manager per connect() call so the old Manager's
         // internal state can't spawn ghost connections after close().
         forceNew: true,
-        // Accept self-signed / mkcert development certificates.
-        // The Stream Deck plugin's bundled Node.js doesn't use the system
-        // trust store, so local dev certs fail without this.
-        rejectUnauthorized: false,
         // Force WebSocket transport — polling adds ~1.5s latency per batch,
         // unacceptable for real-time encoder dial events.
         transports: ["websocket"],
@@ -245,12 +241,25 @@ export class EasyPrompterConnection {
 
       this.socket.on("connect_error", (err: Error) => {
         this.logger.error(`Connection error: ${err.message}`);
-        this.setConnectionState("disconnected");
-        // Socket.io won't auto-reconnect (reconnection: false), so we must.
+
+        // Check if the error carries a permanent error code (e.g. auth failure).
+        // Socket.io attaches server-sent data to the error object.
+        const errData = (err as Error & { data?: { code?: string } }).data;
+        const errorCode = errData?.code ?? null;
+        const isPermanent = errorCode !== null && PERMANENT_ERROR_CODES.includes(errorCode);
+
         const sock = this.socket;
         this.socket = null;
         sock?.removeAllListeners();
         sock?.close();
+
+        if (isPermanent) {
+          this.logger.error(`Permanent auth error (${errorCode}) — will not reconnect`);
+          this.setConnectionState("error");
+          return;
+        }
+
+        this.setConnectionState("disconnected");
         this.scheduleReconnect();
       });
 
@@ -413,6 +422,7 @@ export class EasyPrompterConnection {
     } catch (err) {
       this.logger.error(`Failed to create socket: ${err}`);
       this.socket = null;
+      this.setConnectionState("error");
     }
   }
 

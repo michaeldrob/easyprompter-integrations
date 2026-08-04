@@ -5,13 +5,13 @@
  */
 // ── Feedback IDs (used in feedbacks.ts definitions + checkFeedbacks() calls) ──
 export const FEEDBACK = {
-    IS_PLAYING: "is_playing",
-    IS_CONNECTED: "is_connected",
-    IS_WAITING: "is_waiting",
-    IS_BLACKOUT: "is_blackout",
-    IS_ACTIVE_SCRIPT: "is_active_script",
-    IS_LOADING_SCRIPT: "is_loading_script",
-    IS_FAILED_SCRIPT: "is_failed_script",
+    IS_PLAYING: 'is_playing',
+    IS_CONNECTED: 'is_connected',
+    IS_WAITING: 'is_waiting',
+    IS_BLACKOUT: 'is_blackout',
+    IS_ACTIVE_SCRIPT: 'is_active_script',
+    IS_LOADING_SCRIPT: 'is_loading_script',
+    IS_FAILED_SCRIPT: 'is_failed_script',
 };
 /** Convenience tuple for the three script-related feedbacks. */
 export const SCRIPT_FEEDBACKS = [

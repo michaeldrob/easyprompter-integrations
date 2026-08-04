@@ -1,11 +1,11 @@
-import { InstanceBase, InstanceStatus } from "@companion-module/base";
-import { EasyPrompterConnection, } from "@easyprompter/remote-client";
-import { getConfigFields } from "./config.js";
-import { getActionDefinitions } from "./actions.js";
-import { getFeedbackDefinitions } from "./feedbacks.js";
-import { getVariableDefinitions } from "./variables.js";
-import { getPresetDefinitions, getPresetSections } from "./presets.js";
-import { MIN_SPEED, MAX_SPEED, SCRIPT_FEEDBACKS } from "./constants.js";
+import { InstanceBase, InstanceStatus } from '@companion-module/base';
+import { EasyPrompterConnection, } from '@easyprompter/remote-client';
+import { getConfigFields } from './config.js';
+import { getActionDefinitions } from './actions.js';
+import { getFeedbackDefinitions } from './feedbacks.js';
+import { getVariableDefinitions } from './variables.js';
+import { getPresetDefinitions, getPresetSections } from './presets.js';
+import { MIN_SPEED, MAX_SPEED, SCRIPT_FEEDBACKS } from './constants.js';
 /**
  * EasyPrompter Companion module.
  * Connects to an EasyPrompter instance via the shared remote-client library
@@ -13,13 +13,13 @@ import { MIN_SPEED, MAX_SPEED, SCRIPT_FEEDBACKS } from "./constants.js";
  */
 export class EasyPrompterModule extends InstanceBase {
     connection = null;
-    config = { serverUrl: "", apiKey: "" };
+    config = { serverUrl: '', apiKey: '' };
     unsubscribers = [];
     /** Cached scripts for load_script dropdown */
     cachedScripts = [];
     // --- Public state for actions/feedbacks to read ---
     /** Current connection state */
-    connectionState = "disconnected";
+    connectionState = 'disconnected';
     /** Whether the prompter is currently playing */
     isPlaying = false;
     /** Current scroll speed */
@@ -27,13 +27,13 @@ export class EasyPrompterModule extends InstanceBase {
     /** Whether display is blacked out */
     isBlackout = false;
     /** Currently loaded script ID */
-    currentScriptId = "";
+    currentScriptId = '';
     /** Currently loaded script title (from server) */
-    currentScriptTitle = "";
+    currentScriptTitle = '';
     /** Script ID currently being loaded (for loading feedback) */
-    loadingScriptId = "";
+    loadingScriptId = '';
     /** Script ID that failed to load (for failed feedback) */
-    failedScriptId = "";
+    failedScriptId = '';
     /** Map of controlId → scriptId for buttons with load_script action */
     subscribedScripts = new Map();
     _loadingTimeout = null;
@@ -43,15 +43,15 @@ export class EasyPrompterModule extends InstanceBase {
     _speedDebounceTimer = null;
     static SPEED_DEBOUNCE_MS = 80;
     // --- Timer sync state ---
-    _displayedElapsed = "00:00";
-    _displayedRemaining = "00:00";
-    _pendingElapsed = "00:00";
-    _pendingRemaining = "00:00";
-    _pendingProgress = "0";
+    _displayedElapsed = '00:00';
+    _displayedRemaining = '00:00';
+    _pendingElapsed = '00:00';
+    _pendingRemaining = '00:00';
+    _pendingProgress = '0';
     _timerSyncTimer = null;
     // --- Lifecycle ---
-    async init(config, _isFirstInit) {
-        this.config = config;
+    async init(config, _isFirstInit, secrets) {
+        this.config = { serverUrl: config.serverUrl ?? '', apiKey: secrets?.apiKey ?? '' };
         // Set up definitions
         this.setActionDefinitions(getActionDefinitions(this));
         this.setFeedbackDefinitions(getFeedbackDefinitions(this));
@@ -59,35 +59,35 @@ export class EasyPrompterModule extends InstanceBase {
         this.setPresetDefinitions(getPresetSections(), getPresetDefinitions());
         // Set initial variable values
         this.setVariableValues({
-            speed: "—",
-            status: "Offline",
-            elapsed: "00:00",
-            remaining: "00:00",
-            progress: "0",
-            is_playing: "Paused",
-            font_size: "—",
-            line_height: "—",
-            script_title: "—",
-            script_id: "",
-            blackout: "OFF",
-            screen_margin: "—",
+            speed: '—',
+            status: 'Offline',
+            elapsed: '00:00',
+            remaining: '00:00',
+            progress: '0',
+            is_playing: 'Paused',
+            font_size: '—',
+            line_height: '—',
+            script_title: '—',
+            script_id: '',
+            blackout: 'OFF',
+            screen_margin: '—',
         });
         // Connect if configured
         if (this.config.serverUrl && this.config.apiKey) {
             this.connect();
         }
         else {
-            this.updateStatus(InstanceStatus.Disconnected, "Missing configuration");
+            this.updateStatus(InstanceStatus.BadConfig, 'Missing server URL or integration key');
         }
     }
-    async configUpdated(config) {
-        this.config = config;
+    async configUpdated(config, secrets) {
+        this.config = { serverUrl: config.serverUrl ?? '', apiKey: secrets?.apiKey ?? '' };
         this.disconnect();
         if (this.config.serverUrl && this.config.apiKey) {
             this.connect();
         }
         else {
-            this.updateStatus(InstanceStatus.Disconnected, "Missing configuration");
+            this.updateStatus(InstanceStatus.BadConfig, 'Missing server URL or integration key');
         }
     }
     async destroy() {
@@ -103,8 +103,8 @@ export class EasyPrompterModule extends InstanceBase {
      * Called by action callbacks.
      */
     sendAction(action) {
-        if (!this.connection || this.connectionState !== "active") {
-            this.log("warn", `Cannot send "${action.type}" — not connected`);
+        if (!this.connection || this.connectionState !== 'active') {
+            this.log('warn', `Cannot send "${action.type}" — not connected`);
             return;
         }
         this.connection.sendRemoteControl(action);
@@ -122,39 +122,39 @@ export class EasyPrompterModule extends InstanceBase {
         const isAlreadyLoaded = scriptId === this.currentScriptId ||
             (!this.currentScriptId && titleMatches.length === 1 && titleMatches[0].id === scriptId);
         if (isAlreadyLoaded) {
-            this.log("info", `[LoadScript] Script "${scriptId}" is already loaded — returning success`);
+            this.log('info', `[LoadScript] Script "${scriptId}" is already loaded — returning success`);
             this.currentScriptId = scriptId;
             this.checkFeedbacks(...SCRIPT_FEEDBACKS);
             return;
         }
-        this.sendAction({ type: "switch_script", scriptId });
+        this.sendAction({ type: 'switch_script', scriptId });
         // Enter loading state
         this.loadingScriptId = scriptId;
-        this.failedScriptId = "";
+        this.failedScriptId = '';
         if (this._failedTimeout) {
             clearTimeout(this._failedTimeout);
             this._failedTimeout = null;
         }
-        this.checkFeedbacks("is_loading_script", "is_failed_script");
+        this.checkFeedbacks('is_loading_script', 'is_failed_script');
         // Timeout: show failed after 8s
         if (this._loadingTimeout)
             clearTimeout(this._loadingTimeout);
         this._loadingTimeout = setTimeout(() => {
             if (this.loadingScriptId === scriptId) {
-                this.loadingScriptId = "";
+                this.loadingScriptId = '';
                 this.failedScriptId = scriptId;
-                this.checkFeedbacks("is_loading_script", "is_failed_script");
+                this.checkFeedbacks('is_loading_script', 'is_failed_script');
                 // Auto-clear failed after 5s
                 this._failedTimeout = setTimeout(() => {
-                    this.failedScriptId = "";
-                    this.checkFeedbacks("is_failed_script");
+                    this.failedScriptId = '';
+                    this.checkFeedbacks('is_failed_script');
                 }, 5000);
             }
         }, 8000);
     }
     clearLoadingState() {
-        this.loadingScriptId = "";
-        this.failedScriptId = "";
+        this.loadingScriptId = '';
+        this.failedScriptId = '';
         if (this._loadingTimeout) {
             clearTimeout(this._loadingTimeout);
             this._loadingTimeout = null;
@@ -180,19 +180,23 @@ export class EasyPrompterModule extends InstanceBase {
             if (d === 0)
                 return;
             const newSpeed = Math.max(MIN_SPEED, Math.min(MAX_SPEED, this.currentSpeed + d));
-            this.sendAction({ type: "set_speed", speedWpm: newSpeed });
+            this.sendAction({ type: 'set_speed', speedWpm: newSpeed });
         }, EasyPrompterModule.SPEED_DEBOUNCE_MS);
     }
     // --- Private connection management ---
     connect() {
-        // Create the connection manager with Companion's logger
+        // Guard against connect() while already connected (L4)
+        if (this.connection) {
+            this.disconnect();
+        }
+        // Create the connection with Companion's logger
         const logger = {
-            info: (msg) => this.log("info", msg),
-            warn: (msg) => this.log("warn", msg),
-            error: (msg) => this.log("error", msg),
-            debug: (msg) => this.log("debug", msg),
+            info: (msg) => this.log('info', msg),
+            warn: (msg) => this.log('warn', msg),
+            error: (msg) => this.log('error', msg),
+            debug: (msg) => this.log('debug', msg),
         };
-        this.log("info", `Connecting with URL="${this.config.serverUrl}" apiKey="${this.config.apiKey ? `${this.config.apiKey.slice(0, 4)}...(len=${this.config.apiKey.length})` : "(empty)"}" `);
+        this.log('info', `Connecting to ${this.config.serverUrl}`);
         this.connection = new EasyPrompterConnection(this.config.serverUrl, this.config.apiKey, logger);
         this.updateStatus(InstanceStatus.Connecting);
         // Subscribe to connection state changes
@@ -200,7 +204,7 @@ export class EasyPrompterModule extends InstanceBase {
             this.connectionState = state;
             this.updateCompanionStatus(state);
             this.updateStatusVariable(state);
-            this.checkFeedbacks("is_connected", "is_waiting");
+            this.checkFeedbacks('is_connected', 'is_waiting');
         }));
         // Subscribe to prompter state changes
         this.unsubscribers.push(this.connection.onStateChange((state) => {
@@ -208,9 +212,9 @@ export class EasyPrompterModule extends InstanceBase {
             this.currentSpeed = state.speed;
             this.setVariableValues({
                 speed: String(Math.round(state.speed)),
-                is_playing: state.isPlaying ? "Playing" : "Paused",
+                is_playing: state.isPlaying ? 'Playing' : 'Paused',
             });
-            this.checkFeedbacks("is_playing");
+            this.checkFeedbacks('is_playing');
         }));
         // Subscribe to timer updates.
         // Timer strings update at 4Hz from the operator's position pings.
@@ -219,9 +223,9 @@ export class EasyPrompterModule extends InstanceBase {
         // Fix: buffer the latest values and only push to Companion variables
         // when BOTH have changed since the last displayed pair.
         this.unsubscribers.push(this.connection.onTimerChange((data) => {
-            const [elapsed, remaining] = EasyPrompterModule.compactTimerPair(data.elapsed ?? "00:00", data.remaining ?? "00:00");
+            const [elapsed, remaining] = EasyPrompterModule.compactTimerPair(data.elapsed ?? '00:00', data.remaining ?? '00:00');
             // Always update progress immediately (it changes smoothly)
-            const progress = data.progress != null ? String(Math.round(data.progress)) : "0";
+            const progress = data.progress != null ? String(Math.round(data.progress)) : '0';
             const elapsedChanged = elapsed !== this._displayedElapsed;
             const remainingChanged = remaining !== this._displayedRemaining;
             if (elapsedChanged && remainingChanged) {
@@ -271,8 +275,8 @@ export class EasyPrompterModule extends InstanceBase {
                 vars.screen_margin = String(Math.round(data.screenMargin));
             if (data.blackout !== undefined) {
                 this.isBlackout = data.blackout;
-                vars.blackout = data.blackout ? "ON" : "OFF";
-                this.checkFeedbacks("is_blackout");
+                vars.blackout = data.blackout ? 'ON' : 'OFF';
+                this.checkFeedbacks('is_blackout');
             }
             if (Object.keys(vars).length > 0) {
                 this.setVariableValues(vars);
@@ -280,14 +284,14 @@ export class EasyPrompterModule extends InstanceBase {
         }));
         // Subscribe to script info changes
         this.unsubscribers.push(this.connection.onScriptInfoChange((data) => {
-            this.log("info", `Script info received: ${JSON.stringify(data)}`);
+            this.log('info', `Script info received: ${JSON.stringify(data)}`);
             if (data.scriptTitle !== undefined) {
-                this.currentScriptTitle = data.scriptTitle || "";
-                this.setVariableValues({ script_title: data.scriptTitle || "—" });
+                this.currentScriptTitle = data.scriptTitle || '';
+                this.setVariableValues({ script_title: data.scriptTitle || '—' });
             }
             // Server may only send scriptTitle without scriptId.
             // Resolve scriptId from cachedScripts when missing.
-            let resolvedScriptId = data.scriptId ?? "";
+            let resolvedScriptId = data.scriptId ?? '';
             if (!resolvedScriptId && data.scriptTitle) {
                 const match = this.cachedScripts.find((s) => s.label === data.scriptTitle);
                 if (match)
@@ -300,15 +304,15 @@ export class EasyPrompterModule extends InstanceBase {
                 this.currentScriptId = resolvedScriptId;
                 this.setVariableValues({ script_id: this.currentScriptId });
             }
-            this.log("info", `[LoadScript] scriptInfo: currentScriptId="${this.currentScriptId}" loadingScriptId="${this.loadingScriptId}"`);
+            this.log('info', `[LoadScript] scriptInfo: currentScriptId="${this.currentScriptId}" loadingScriptId="${this.loadingScriptId}"`);
             // Handle loading state transitions
             if (this.loadingScriptId) {
                 if (this.currentScriptId === this.loadingScriptId) {
-                    this.log("info", `[LoadScript] Script confirmed loaded — clearing loading state`);
+                    this.log('info', `[LoadScript] Script confirmed loaded — clearing loading state`);
                     this.clearLoadingState();
                 }
                 else if (this.currentScriptId) {
-                    this.log("info", `[LoadScript] Different script loaded (${this.currentScriptId}) — clearing loading`);
+                    this.log('info', `[LoadScript] Different script loaded (${this.currentScriptId}) — clearing loading`);
                     this.clearLoadingState();
                 }
                 // else: no definitive scriptId yet, keep loading
@@ -317,12 +321,12 @@ export class EasyPrompterModule extends InstanceBase {
         }));
         // Re-fetch scripts when the server signals a change (create, delete, rename)
         this.unsubscribers.push(this.connection.onScriptsChanged(() => {
-            this.refreshScripts();
+            void this.refreshScripts();
         }));
         // Start the connection
         this.connection.connect();
         // Fetch user scripts for the load_script dropdown
-        this.refreshScripts();
+        void this.refreshScripts();
     }
     /**
      * Fetch user's recent scripts from the API and update the load_script dropdown choices.
@@ -331,23 +335,27 @@ export class EasyPrompterModule extends InstanceBase {
         if (!this.config.serverUrl || !this.config.apiKey)
             return;
         try {
-            const url = this.config.serverUrl.replace(/\/+$/, "") + "/api/remote-keys/scripts";
+            const url = this.config.serverUrl.replace(/\/+$/, '') + '/api/remote-keys/scripts';
+            // eslint-disable-next-line n/no-unsupported-features/node-builtins -- Companion runtime is Node 22
             const resp = await fetch(url, {
-                headers: { "Authorization": "Bearer " + this.config.apiKey },
+                headers: { Authorization: 'Bearer ' + this.config.apiKey },
+                // eslint-disable-next-line n/no-unsupported-features/node-builtins -- Companion runtime is Node 22
+                signal: AbortSignal.timeout(10_000),
             });
             if (!resp.ok) {
-                this.log("warn", `Failed to fetch scripts: HTTP ${resp.status}`);
+                this.log('warn', `Failed to fetch scripts: HTTP ${resp.status}`);
                 return;
             }
-            const data = await resp.json();
+            const data = (await resp.json());
             const rawScripts = Array.isArray(data.scripts) ? data.scripts : [];
             const newScripts = rawScripts
-                .filter((s) => typeof s === "object" && s !== null &&
-                typeof s.id === "string" &&
-                typeof s.title === "string")
-                .map((s) => ({ id: s.id, label: s.title || "(Untitled)" }));
+                .filter((s) => typeof s === 'object' &&
+                s !== null &&
+                typeof s.id === 'string' &&
+                typeof s.title === 'string')
+                .map((s) => ({ id: s.id, label: s.title || '(Untitled)' }));
             if (newScripts.length === 0 && this.cachedScripts.length === 0) {
-                this.log("warn", "[RefreshScripts] No scripts found — ensure scripts exist in your EasyPrompter account");
+                this.log('warn', '[RefreshScripts] No scripts found — ensure scripts exist in your EasyPrompter account');
             }
             // Skip action/feedback redefinition if the list hasn't changed
             const changed = JSON.stringify(newScripts) !== JSON.stringify(this.cachedScripts);
@@ -362,17 +370,17 @@ export class EasyPrompterModule extends InstanceBase {
                 if (match) {
                     this.currentScriptId = match.id;
                     this.setVariableValues({ script_id: this.currentScriptId });
-                    this.log("info", `[RefreshScripts] Resolved currentScriptId="${match.id}" from title "${this.currentScriptTitle}"`);
+                    this.log('info', `[RefreshScripts] Resolved currentScriptId="${match.id}" from title "${this.currentScriptTitle}"`);
                 }
                 else {
-                    this.log("info", `[RefreshScripts] Could not resolve scriptId from title "${this.currentScriptTitle}" — no match in ${this.cachedScripts.length} cached scripts`);
+                    this.log('info', `[RefreshScripts] Could not resolve scriptId from title "${this.currentScriptTitle}" — no match in ${this.cachedScripts.length} cached scripts`);
                 }
             }
             this.checkFeedbacks(...SCRIPT_FEEDBACKS);
-            this.log("info", `Refreshed scripts: ${this.cachedScripts.length} found, currentScriptId="${this.currentScriptId}"`);
+            this.log('info', `Refreshed scripts: ${this.cachedScripts.length} found, currentScriptId="${this.currentScriptId}"`);
         }
         catch (err) {
-            this.log("warn", `Failed to fetch scripts: ${err}`);
+            this.log('warn', `Failed to fetch scripts: ${err}`);
         }
     }
     disconnect() {
@@ -387,17 +395,22 @@ export class EasyPrompterModule extends InstanceBase {
             this.connection = null;
         }
         // Reset state
-        this.connectionState = "disconnected";
+        this.connectionState = 'disconnected';
         this.isPlaying = false;
         this.isBlackout = false;
         this.currentSpeed = 150;
-        this.currentScriptId = "";
-        this.currentScriptTitle = "";
-        // Clear timer sync
+        this.currentScriptId = '';
+        this.currentScriptTitle = '';
+        // Clear timer sync and reset displayed values (L5)
         if (this._timerSyncTimer) {
             clearTimeout(this._timerSyncTimer);
             this._timerSyncTimer = null;
         }
+        this._displayedElapsed = '00:00';
+        this._displayedRemaining = '00:00';
+        this._pendingElapsed = '00:00';
+        this._pendingRemaining = '00:00';
+        this._pendingProgress = '0';
         // Clear speed debounce
         if (this._speedDebounceTimer) {
             clearTimeout(this._speedDebounceTimer);
@@ -413,16 +426,16 @@ export class EasyPrompterModule extends InstanceBase {
             clearTimeout(this._failedTimeout);
             this._failedTimeout = null;
         }
-        this.loadingScriptId = "";
-        this.failedScriptId = "";
+        this.loadingScriptId = '';
+        this.failedScriptId = '';
         // Only reset connection-dependent values; keep last-known progress,
         // timer, and display settings so they persist across
         // reconnects rather than flashing to zero.
         this.setVariableValues({
-            speed: "—",
-            status: "Offline",
-            is_playing: "Paused",
-            blackout: "OFF",
+            speed: '—',
+            status: 'Offline',
+            is_playing: 'Paused',
+            blackout: 'OFF',
         });
     }
     /**
@@ -430,16 +443,16 @@ export class EasyPrompterModule extends InstanceBase {
      */
     updateCompanionStatus(state) {
         switch (state) {
-            case "active":
+            case 'active':
                 this.updateStatus(InstanceStatus.Ok);
                 break;
-            case "waiting":
-                this.updateStatus(InstanceStatus.Ok, "Waiting for teleprompter session");
+            case 'waiting':
+                this.updateStatus(InstanceStatus.Ok, 'Waiting for teleprompter session');
                 break;
-            case "disconnected":
+            case 'disconnected':
                 this.updateStatus(InstanceStatus.Disconnected);
                 break;
-            case "error":
+            case 'error':
                 this.updateStatus(InstanceStatus.ConnectionFailure);
                 break;
         }
@@ -449,10 +462,10 @@ export class EasyPrompterModule extends InstanceBase {
      */
     updateStatusVariable(state) {
         const labels = {
-            active: "Connected",
-            waiting: "Waiting",
-            disconnected: "Offline",
-            error: "Error",
+            active: 'Connected',
+            waiting: 'Waiting',
+            disconnected: 'Offline',
+            error: 'Error',
         };
         this.setVariableValues({ status: labels[state] });
     }
@@ -464,15 +477,15 @@ export class EasyPrompterModule extends InstanceBase {
      */
     static compactTimerPair(a, b) {
         const strip = (s) => {
-            const parts = s.split(":");
+            const parts = s.split(':');
             // Only strip if exactly 3 segments and hours segment is "00"
-            if (parts.length === 3 && parts[0] === "00")
-                return parts.slice(1).join(":");
+            if (parts.length === 3 && parts[0] === '00')
+                return parts.slice(1).join(':');
             return s;
         };
         const hasHours = (s) => {
-            const parts = s.split(":");
-            return parts.length === 3 && parts[0] !== "00";
+            const parts = s.split(':');
+            return parts.length === 3 && parts[0] !== '00';
         };
         // If either value has non-zero hours, keep both in HH:MM:SS
         if (hasHours(a) || hasHours(b))
