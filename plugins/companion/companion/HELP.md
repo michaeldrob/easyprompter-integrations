@@ -7,7 +7,7 @@ Control your EasyPrompter teleprompter directly from Bitfocus Companion. Include
 ## Setup
 
 1. Add an **EasyPrompter** connection in Companion
-2. Enter your **Server URL** (e.g. `https://app.easyprompter.com`)
+2. Enter your **Server URL** (default: `https://easyprompter.com`). Self-hosted users should enter their own server address.
 3. Enter your **Integration Key** — find it in EasyPrompter → Settings → Integrations
 4. The connection status indicator turns green when connected
 
@@ -23,9 +23,9 @@ Control your EasyPrompter teleprompter directly from Bitfocus Companion. Include
 | Reset to Start       | Reset to beginning                   |
 | Next Marker          | Jump to next script marker           |
 | Previous Marker      | Jump to previous marker              |
-| Fast Forward (Hold)  | Hold to fast forward (rate: 0.1–1.0) |
+| Fast Forward (Hold)  | Hold to fast forward                  |
 | Fast Forward Release | Release fast forward                 |
-| Rewind (Hold)        | Hold to rewind (rate: 0.1–1.0)       |
+| Rewind (Hold)        | Hold to rewind                        |
 | Rewind Release       | Release rewind                       |
 | Blackout Toggle      | Toggle blank screen on display       |
 

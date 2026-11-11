@@ -39,6 +39,7 @@ import { getFeedbackDefinitions } from './feedbacks.js'
 import { getVariableDefinitions } from './variables.js'
 import { getPresetDefinitions, getPresetSections } from './presets.js'
 import { MIN_SPEED, MAX_SPEED, SCRIPT_FEEDBACKS } from './constants.js'
+import { UpgradeScripts } from './upgrades.js'
 
 /**
  * EasyPrompter Companion module.
@@ -610,6 +611,6 @@ export class EasyPrompterModule extends InstanceBase<EasyPrompterTypes> {
 	}
 }
 
-export const UpgradeScripts: never[] = []
+export { UpgradeScripts }
 
 export default EasyPrompterModule

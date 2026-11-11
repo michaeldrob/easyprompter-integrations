@@ -94,20 +94,9 @@ export function getActionDefinitions(instance: EasyPrompterModule): CompanionAct
 
 		fast_forward_start: {
 			name: 'Fast Forward (Hold)',
-			options: [
-				{
-					type: 'number',
-					label: 'Rate (0.1 – 1.0)',
-					id: 'rate',
-					default: 1.0,
-					min: 0.1,
-					max: 1.0,
-					step: 0.1,
-				},
-			],
-			callback: (action) => {
-				const rate = (action.options.rate as number) ?? 1.0
-				instance.sendAction({ type: 'fast_forward_start', displacement: rate })
+			options: [],
+			callback: () => {
+				instance.sendAction({ type: 'fast_forward_start' })
 			},
 		},
 
@@ -121,20 +110,9 @@ export function getActionDefinitions(instance: EasyPrompterModule): CompanionAct
 
 		rewind_start: {
 			name: 'Rewind (Hold)',
-			options: [
-				{
-					type: 'number',
-					label: 'Rate (0.1 – 1.0)',
-					id: 'rate',
-					default: 1.0,
-					min: 0.1,
-					max: 1.0,
-					step: 0.1,
-				},
-			],
-			callback: (action) => {
-				const rate = (action.options.rate as number) ?? 1.0
-				instance.sendAction({ type: 'rewind_start', displacement: rate })
+			options: [],
+			callback: () => {
+				instance.sendAction({ type: 'rewind_start' })
 			},
 		},
 

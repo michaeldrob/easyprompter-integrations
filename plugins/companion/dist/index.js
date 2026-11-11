@@ -6,6 +6,7 @@ import { getFeedbackDefinitions } from './feedbacks.js';
 import { getVariableDefinitions } from './variables.js';
 import { getPresetDefinitions, getPresetSections } from './presets.js';
 import { MIN_SPEED, MAX_SPEED, SCRIPT_FEEDBACKS } from './constants.js';
+import { UpgradeScripts } from './upgrades.js';
 /**
  * EasyPrompter Companion module.
  * Connects to an EasyPrompter instance via the shared remote-client library
@@ -493,6 +494,6 @@ export class EasyPrompterModule extends InstanceBase {
         return [strip(a), strip(b)];
     }
 }
-export const UpgradeScripts = [];
+export { UpgradeScripts };
 export default EasyPrompterModule;
 //# sourceMappingURL=index.js.map
