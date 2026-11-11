@@ -23,12 +23,3 @@ export type EasyPrompterSettings = {
   /** If the connection failed, this contains the error code (e.g., CONNECTION_LIMIT_REACHED) */
   connectionError?: string | null;
 };
-
-/**
- * Per-action settings for shuttle-type actions (Fast Forward, Rewind).
- */
-export interface ShuttleActionSettings {
-  /** Shuttle displacement 0.0–1.0 (default 1.0 = full speed) */
-  shuttleRate?: number;
-  [key: string]: unknown;
-}

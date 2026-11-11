@@ -22,6 +22,9 @@ import { LoadScript } from "./actions/load-script";
 import { connectionManager } from "./connection-manager";
 import type { EasyPrompterSettings } from "./types";
 
+const PRODUCTION_SERVER_URL = "https://easyprompter.com";
+const V032_DEFAULT_SERVER_URL = "https://app.easyprompter.com";
+
 // Log level controlled by manifest Debug setting
 
 // Register all actions
@@ -51,19 +54,23 @@ let lastConnectedUrl = "";
 let lastConnectedKey = "";
 let connectionStateUnsub: (() => void) | null = null;
 
-// When global settings change (user enters URL + API key), establish connection
-streamDeck.settings.onDidReceiveGlobalSettings<EasyPrompterSettings>((ev) => {
-  const s = ev.settings;
-  if (!s.serverUrl || !s.apiKey) return;
+async function applyGlobalSettings(s: EasyPrompterSettings): Promise<void> {
+  let settings = s;
+  if (s.serverUrl === V032_DEFAULT_SERVER_URL) {
+    settings = { ...s, serverUrl: PRODUCTION_SERVER_URL };
+    await streamDeck.settings.setGlobalSettings(settings);
+  }
+
+  if (!settings.serverUrl || !settings.apiKey) return;
 
   // Skip if URL+key haven't changed — this is just our own connectionStatus write
-  if (s.serverUrl === lastConnectedUrl && s.apiKey === lastConnectedKey) return;
-  lastConnectedUrl = s.serverUrl;
-  lastConnectedKey = s.apiKey;
+  if (settings.serverUrl === lastConnectedUrl && settings.apiKey === lastConnectedKey) return;
+  lastConnectedUrl = settings.serverUrl;
+  lastConnectedKey = settings.apiKey;
 
   // Disconnect stale connections before creating/reusing the new one
-  connectionManager.disconnectAllExcept(s.serverUrl, s.apiKey);
-  const conn = connectionManager.getConnection(s.serverUrl, s.apiKey);
+  connectionManager.disconnectAllExcept(settings.serverUrl, settings.apiKey);
+  const conn = connectionManager.getConnection(settings.serverUrl, settings.apiKey);
   conn.connect();
 
   // Clean up previous listener
@@ -80,7 +87,16 @@ streamDeck.settings.onDidReceiveGlobalSettings<EasyPrompterSettings>((ev) => {
       await streamDeck.settings.setGlobalSettings({ ...current, connectionStatus: state, connectionError: err });
     }
   });
+}
+
+// When global settings change (user enters URL + API key), establish connection.
+streamDeck.settings.onDidReceiveGlobalSettings<EasyPrompterSettings>((ev) => {
+  void applyGlobalSettings(ev.settings);
 });
 
-// Connect to Stream Deck
-streamDeck.connect();
+// Connect to Stream Deck, then migrate and apply settings already saved by an
+// earlier plugin version even if no Property Inspector is opened.
+void streamDeck.connect().then(async () => {
+  const settings = await streamDeck.settings.getGlobalSettings<EasyPrompterSettings>();
+  await applyGlobalSettings(settings);
+});

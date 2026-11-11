@@ -149,7 +149,7 @@
     <div id="configBody" class="collapsible-body">
       <div class="field">
         <label>Server URL</label>
-        <input id="serverUrl" type="url" placeholder="https://app.easyprompter.com" />
+        <input id="serverUrl" type="url" placeholder="https://easyprompter.com" value="https://easyprompter.com" />
       </div>
       <div class="field">
         <label>Integration Key</label>
@@ -169,6 +169,7 @@
     </div>
 
     <script>
+      const DEFAULT_URL = "https://easyprompter.com";
       let websocket = null;
       let piUUID = null;
       let globalSettings = {};
@@ -196,7 +197,7 @@
           const msg = JSON.parse(evt.data);
           if (msg.event === "didReceiveGlobalSettings" && msg.payload && msg.payload.settings) {
             globalSettings = msg.payload.settings;
-            document.getElementById("serverUrl").value = globalSettings.serverUrl || "";
+            document.getElementById("serverUrl").value = globalSettings.serverUrl || DEFAULT_URL;
             document.getElementById("apiKey").value = globalSettings.apiKey || "";
             updateStatus();
             // Auto-collapse if both fields are populated
@@ -227,7 +228,7 @@
       }
 
       function saveGlobalSettings() {
-        globalSettings.serverUrl = document.getElementById("serverUrl").value.trim();
+        globalSettings.serverUrl = document.getElementById("serverUrl").value.trim() || DEFAULT_URL;
         globalSettings.apiKey = document.getElementById("apiKey").value.trim();
         if (websocket && websocket.readyState === WebSocket.OPEN) {
           websocket.send(JSON.stringify({ event: "setGlobalSettings", context: piUUID, payload: globalSettings }));

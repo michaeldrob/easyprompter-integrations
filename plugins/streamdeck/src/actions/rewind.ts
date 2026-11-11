@@ -1,49 +1,26 @@
 import {
   action,
-  DidReceiveSettingsEvent,
   KeyDownEvent,
   KeyUpEvent,
   SingletonAction,
-  WillAppearEvent,
-  WillDisappearEvent,
 } from "@elgato/streamdeck";
 import streamDeck from "@elgato/streamdeck";
 
 import { connectionManager } from "../connection-manager";
-import type { EasyPrompterSettings, ShuttleActionSettings } from "../types";
+import type { EasyPrompterSettings } from "../types";
 
 /**
- * Rewind action — hold to shuttle backward at a configurable rate.
+ * Rewind action — hold to shuttle backward at the configured scan speed.
  * Uses rewind_start/stop which properly saves and restores play state.
- * Rate is configurable per-tile via the Property Inspector.
+ * Scan speed is resolved by the operator's Controller Mapping setting.
  */
 @action({ UUID: "com.easyprompter.streamdeck.rewind" })
 export class Rewind extends SingletonAction {
-  private shuttleRates = new Map<string, number>();
-
-  override async onWillAppear(
-    ev: WillAppearEvent
-  ): Promise<void> {
-    const actionSettings = ev.payload.settings as ShuttleActionSettings;
-    this.shuttleRates.set(ev.action.id, actionSettings.shuttleRate ?? 1.0);
-
+  override async onWillAppear(): Promise<void> {
     const settings = await streamDeck.settings.getGlobalSettings<EasyPrompterSettings>();
     if (!settings.serverUrl || !settings.apiKey) return;
     const conn = connectionManager.getConnection(settings.serverUrl, settings.apiKey);
     conn.connect();
-  }
-
-  override async onDidReceiveSettings(
-    ev: DidReceiveSettingsEvent
-  ): Promise<void> {
-    const actionSettings = ev.payload.settings as ShuttleActionSettings;
-    this.shuttleRates.set(ev.action.id, actionSettings.shuttleRate ?? 1.0);
-  }
-
-  override async onWillDisappear(
-    ev: WillDisappearEvent
-  ): Promise<void> {
-    this.shuttleRates.delete(ev.action.id);
   }
 
   override async onKeyDown(
@@ -61,8 +38,7 @@ export class Rewind extends SingletonAction {
       return;
     }
 
-    const rate = this.shuttleRates.get(ev.action.id) ?? 1.0;
-    conn.sendRemoteControl({ type: "rewind_start", displacement: rate });
+    conn.sendRemoteControl({ type: "rewind_start" });
   }
 
   override async onKeyUp(

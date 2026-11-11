@@ -193,7 +193,7 @@
     <div class="field">
       <div class="field-label">Server URL</div>
       <div class="field-value">
-        <input id="serverUrl" type="url" placeholder="https://app.easyprompter.com" value="https://app.easyprompter.com" required />
+        <input id="serverUrl" type="url" placeholder="https://easyprompter.com" value="https://easyprompter.com" required />
       </div>
     </div>
     <div class="field">
@@ -218,7 +218,7 @@
     </div>
 
     <script>
-      const DEFAULT_URL = "https://app.easyprompter.com";
+      const DEFAULT_URL = "https://easyprompter.com";
       let websocket = null;
       let uuid = null;
       let globalSettings = {};
@@ -309,7 +309,7 @@
 
       function updateSettingsLink() {
         const link = document.getElementById("settingsLink");
-        const raw = (globalSettings.serverUrl || "https://app.easyprompter.com").replace(/\/+$/, "");
+        const raw = (globalSettings.serverUrl || "https://easyprompter.com").replace(/\/+$/, "");
         // Validate URL protocol to prevent javascript: injection
         if (/^https?:\/\//i.test(raw)) {
           link.href = raw + "/app/settings#remoteControl";
